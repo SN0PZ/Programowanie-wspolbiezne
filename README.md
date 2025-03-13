@@ -4,5 +4,5 @@
 
 | Name Surname (initials) | GUID                                     |
 | ----------------------- | ---------------------------------------- |
-| AB                      | `{FD9D086C-532F-4AAC-BB99-69D7798837D8}` |
-| Jan Kowalski            | `{44FBFCF5-4430-4964-878D-1867DC679E0D}` |
+| Kacper Gawlik           | `{4f8e1d9e-aa21-4557-a94b-9d4a4086e3d0}` |
+| Kamil Sieradzki         | `{6998cecc-e366-4270-b5e6-d8a35391a7ce}` |
