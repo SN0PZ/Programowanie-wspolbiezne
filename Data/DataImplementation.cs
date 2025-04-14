@@ -12,14 +12,29 @@ namespace TP.ConcurrentProgramming.Data
         #region ctor
 
         private readonly Boundary boundary;
-
+        private Timer? MoveTimer; // Tylko jedna deklaracja MoveTimer jako nullable
 
         public DataImplementation()
     {
-            boundary = new Boundary(0, 380, 0, 400);
-            // timer (MoveTimer) co 100 ms wywołuje metodę Move(), aby przesuwać piłki
-            MoveTimer = new Timer(Move, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(20));
+            boundary = new Boundary(0, 375, 0, 395);
     }
+
+        private void StartTimer()
+        {
+            if (MoveTimer != null)
+            {
+                MoveTimer.Dispose(); 
+            }
+            MoveTimer = new Timer(Move, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(20));
+        }
+        private void StopTimer()
+        {
+            if (MoveTimer != null)
+            {
+                MoveTimer.Dispose();
+                MoveTimer = null;
+            }
+        }
 
         #endregion ctor
 
@@ -32,47 +47,51 @@ namespace TP.ConcurrentProgramming.Data
             if (upperLayerHandler == null)
                 throw new ArgumentNullException(nameof(upperLayerHandler));
 
+            StopTimer(); // Zatrzymujemy poprzedni timer, jeśli istnieje
+            BallsList.Clear(); // Czyścimy poprzednie piłki
+
             Random random = new Random();
             for (int i = 0; i < numberOfBalls; i++)
             {
-                // Generujemy pozycję początkową w granicach obszaru
                 Vector startingPosition = new(
-                    random.Next(20, 380),  // x: od 20 do 380
-                    random.Next(20, 400)   // y: od 20 do 400
+                    random.Next(20, 380),
+                    random.Next(20, 400)
                 );
-                // Ustawiamy mniejszą prędkość początkową dla bardziej kontrolowanego ruchu
                 Vector initialVelocity = new(
-                    (random.NextDouble() - 0.5) * 2,  // Prędkość x: -1 do 1
-                    (random.NextDouble() - 0.5) * 2   // Prędkość y: -1 do 1
+                    (random.NextDouble() - 0.5) * 2,
+                    (random.NextDouble() - 0.5) * 2
                 );
                 Ball newBall = new(startingPosition, initialVelocity);
                 upperLayerHandler(startingPosition, newBall);
                 BallsList.Add(newBall);
             }
+
+            StartTimer(); // Timer uruchamiany tylko tutaj
         }
+
 
         #endregion DataAbstractAPI
 
         #region IDisposable
 
         protected virtual void Dispose(bool disposing)
-    {
-      if (!Disposed)
-      {
-        if (disposing)
         {
-          // wyłącza timer -> zatrzymuje ruch piłek
-          MoveTimer.Dispose();
-          // czyszczenie listy piłek -> zwolnienie zasobów 
-          BallsList.Clear();
+            if (!Disposed)
+            {
+                if (disposing)
+                {
+                    // wyłącza timer -> zatrzymuje ruch piłek
+                    MoveTimer?.Dispose(); 
+                                          // czyszczenie listy piłek -> zwolnienie zasobów 
+                    BallsList.Clear();
+                }
+                Disposed = true;
+            }
+            else
+                throw new ObjectDisposedException(nameof(DataImplementation));
         }
-        Disposed = true;
-      }
-      else
-        throw new ObjectDisposedException(nameof(DataImplementation));
-    }
 
-    public override void Dispose()
+        public override void Dispose()
     {
       // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
       Dispose(disposing: true);
@@ -86,8 +105,6 @@ namespace TP.ConcurrentProgramming.Data
 
     //private bool disposedValue;
     private bool Disposed = false;
-
-    private readonly Timer MoveTimer;
     private Random RandomGenerator = new();
     private List<Ball> BallsList = [];
 
