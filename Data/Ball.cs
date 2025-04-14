@@ -24,14 +24,14 @@ namespace TP.ConcurrentProgramming.Data
     // prędkość piłki może być modyfikowana (set)
     public IVector Velocity { get; set; }
 
-    #endregion IBall
+        #endregion IBall
 
-    #region private
+        #region private
 
-    private Vector Position;
+        internal Vector Position { get; private set; }  // Zamiast private Vector Position;
 
-    // zdarzenie zostanie wywołane tylko wtedy, gdy ma subskrybentów (czyli ktoś słucha zmian pozycji)
-    private void RaiseNewPositionChangeNotification()
+        // zdarzenie zostanie wywołane tylko wtedy, gdy ma subskrybentów (czyli ktoś słucha zmian pozycji)
+        private void RaiseNewPositionChangeNotification()
     {
       NewPositionNotification?.Invoke(this, Position);
     }
