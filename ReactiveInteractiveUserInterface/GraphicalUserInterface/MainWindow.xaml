@@ -16,7 +16,6 @@
             <Label Content="Początkowa ilość kulek:" VerticalAlignment="Center"/>
             <TextBox Width="50" Margin="0,0,5,0" Text="{Binding NumberOfBallsToAdd}" VerticalAlignment="Center"/>
             <Button Content="Start" Width="60" Click="StartButton_Click" Margin="10,0,0,0"/>
-            <Button Content="Stop" Width="60" Margin="10,0,0,0"/>
             <Button Content="Dodaj" Width="60" Command="{Binding AddBallCommand}" Margin="10,0,0,0"/>
             <Button Content="Usuń" Width="60" Command="{Binding RemoveBallCommand}" Margin="10,0,0,0"/>
 

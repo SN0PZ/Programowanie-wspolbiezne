@@ -24,7 +24,6 @@ namespace TP.ConcurrentProgramming.Presentation.ViewModel
             ModelLayer = modelLayerAPI == null ? ModelAbstractApi.CreateModel() : modelLayerAPI;
             Observer = ModelLayer.Subscribe<ModelIBall>(x => Balls.Add(x));
 
-            ClearBallsCommand = new RelayCommand(ClearBalls);
             AddBallCommand = new RelayCommand(AddBall);
             RemoveBallCommand = new RelayCommand(RemoveBall);
         }
@@ -47,7 +46,6 @@ namespace TP.ConcurrentProgramming.Presentation.ViewModel
             }
         }
 
-        public ICommand ClearBallsCommand { get; }
         public ICommand AddBallCommand { get; }
         public ICommand RemoveBallCommand { get; }
 
@@ -61,22 +59,6 @@ namespace TP.ConcurrentProgramming.Presentation.ViewModel
                 throw new ObjectDisposedException(nameof(MainWindowViewModel));
 
             ModelLayer.Start(NumberOfBallsToAdd, width, height);
-        }
-
-        private void ClearBalls()
-        {
-            Balls.Clear();
-            try
-            {
-                ModelLayer.Dispose();
-            }
-            catch (ObjectDisposedException)
-            {
-            }
-            ModelLayer.Dispose();
-            ModelLayer = ModelAbstractApi.CreateModel();
-            Observer = ModelLayer.Subscribe<ModelIBall>(x => Balls.Add(x));
-            Disposed = false;
         }
 
         private void AddBall()
