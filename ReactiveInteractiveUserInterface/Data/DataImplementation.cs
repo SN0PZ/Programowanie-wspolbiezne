@@ -9,7 +9,9 @@
 //_____________________________________________________________________________________________________________________________________
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 
 namespace TP.ConcurrentProgramming.Data
 {
@@ -19,39 +21,37 @@ namespace TP.ConcurrentProgramming.Data
 
         public DataImplementation()
         {
-            // Zmniejszona wartość interwału dla płynniejszego ruchu
-            MoveTimer = new Timer(Move, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(20));
+            MoveTimer = new Timer(Move, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(16));
         }
 
         #endregion ctor
 
         #region DataAbstractAPI
 
-        public override void Start(int numberOfBalls, Action<IVector, IBall> upperLayerHandler)
+        public override void Start(int numberOfBalls, double tableWidth, double tableHeight, Action<IVector, IBall> upperLayerHandler)
         {
+            this.TableWidth = tableWidth;
+            this.TableHeight = tableHeight;
             if (Disposed)
                 throw new ObjectDisposedException(nameof(DataImplementation));
             if (upperLayerHandler == null)
                 throw new ArgumentNullException(nameof(upperLayerHandler));
 
             Random random = new Random();
-
             for (int i = 0; i < numberOfBalls; i++)
             {
-                Vector startingPosition = new(random.Next(100, 300), random.Next(100, 300));
-                Vector randomVelocity = new(random.Next(-3, 4), random.Next(-3, 4));
+                double startX = random.NextDouble() * (TableWidth - 2 * BallRadius);
+                double startY = random.NextDouble() * (TableHeight - 2 * BallRadius);
 
-                // Upewniamy się, że piłka ma prędkość różną od zera
-                if (randomVelocity.x == 0 && randomVelocity.y == 0)
-                {
-                    randomVelocity = new(1, 1);
-                }
+                Vector startingPosition = new(startX, startY);
+                Vector velocity = new Vector((random.NextDouble() - 0.5) * 2, (random.NextDouble() - 0.5) * 2);
 
-                Ball newBall = new(startingPosition, randomVelocity);
+                Ball newBall = new(startingPosition, velocity);
                 upperLayerHandler(startingPosition, newBall);
                 BallsList.Add(newBall);
             }
         }
+
 
         #endregion DataAbstractAPI
 
@@ -84,56 +84,79 @@ namespace TP.ConcurrentProgramming.Data
 
         private bool Disposed = false;
         private readonly Timer MoveTimer;
-        private readonly Random RandomGenerator = new();
-        private readonly List<Ball> BallsList = [];
+        private Random RandomGenerator = new();
+        private List<Ball> BallsList = new();
 
-        private void Move(object? x)
+        // Parametry planszy
+        private double TableWidth;
+        private double TableHeight;
+        private const double BallRadius = 10;
+
+        private void Move(object? _)
         {
-            const double CanvasWidth = 400;
-            const double CanvasHeight = 420;
-            const double BarrierY = 420;
-            const double Diameter = 20;
-
-            foreach (Ball item in BallsList)
+            foreach (Ball ball in BallsList.ToList())
             {
-                Vector position = (Vector)item.PositionReadOnly;
-                Vector velocity = (Vector)item.Velocity;
+                Vector newPosition = (Vector)ball.Position + (Vector)ball.Velocity;
 
-                Vector newPosition = position + velocity;
+                double minX = 0;
+                double maxX = TableWidth - 2 * BallRadius;
+                double minY = 0;
+                double maxY = TableHeight - 2 * BallRadius;
 
-                // Odbicie od lewej/prawej ściany
-                if ((newPosition.x <= 0 && velocity.x < 0) || (newPosition.x + Diameter >= CanvasWidth && velocity.x > 0))
+                double newVelX = ball.Velocity.x;
+                double newVelY = ball.Velocity.y;
+
+                // odbijanie 
+                if (newPosition.x <= minX || newPosition.x >= maxX)
                 {
-                    velocity = new Vector(-velocity.x, velocity.y); // Odbicie poziome
+                    newVelX *= -1;
+                    newPosition = new Vector(
+                        Math.Clamp(newPosition.x, minX, maxX),
+                        newPosition.y
+                    );
                 }
 
-                // Odbicie od sufitu
-                if (newPosition.y <= 0 && velocity.y < 0)
+                // odbijanie od góry / dołu
+                if (newPosition.y <= minY || newPosition.y >= maxY)
                 {
-                    velocity = new Vector(velocity.x, -velocity.y); // Odbicie od góry
+                    newVelY *= -1;
+                    newPosition = new Vector(
+                        newPosition.x,
+                        Math.Clamp(newPosition.y, minY, maxY)
+                    );
                 }
 
-                // Odbicie od dolnej granicy
-                if (newPosition.y + Diameter >= CanvasHeight && velocity.y > 0)
-                {
-                    velocity = new Vector(velocity.x, -velocity.y); // Odbicie od dołu
-                    newPosition = new Vector(newPosition.x, CanvasHeight - Diameter); // Zapewniamy, że piłka nie wyjdzie poza granicę
-                }
-
-                // Odbicie od poziomej bariery
-                if (position.y + Diameter <= BarrierY && newPosition.y + Diameter >= BarrierY && velocity.y > 0)
-                {
-                    velocity = new Vector(velocity.x, -velocity.y); // Odbicie od poziomej bariery
-                    newPosition = new Vector(newPosition.x, BarrierY - Diameter); // Zapewniamy, że piłka zatrzyma się na barierze
-                }
-
-                // Zapisujemy nową prędkość i wykonujemy ruch
-                item.Velocity = velocity;
-                Vector delta = newPosition - position;
-                item.Move(delta);
+                // zaktualizuj prędkość i pozycję
+                ball.Velocity = new Vector(newVelX, newVelY);
+                ball.Move(newPosition - ball.Position);
             }
         }
 
+        public override void AddBall(Action<IVector, IBall> upperLayerHandler)
+        {
+            if (Disposed)
+                throw new ObjectDisposedException(nameof(DataImplementation));
+            if (upperLayerHandler == null)
+                throw new ArgumentNullException(nameof(upperLayerHandler));
+
+            Random random = new Random();
+            double startX = random.NextDouble() * (TableWidth - 2 * BallRadius);
+            double startY = random.NextDouble() * (TableHeight - 2 * BallRadius);
+            Vector startingPosition = new(startX, startY);
+            Vector velocity = new((random.NextDouble() - 0.5) * 2, (random.NextDouble() - 0.5) * 2);
+
+            Ball newBall = new(startingPosition, velocity);
+            BallsList.Add(newBall);
+            upperLayerHandler(startingPosition, newBall);
+        }
+
+        public override void RemoveLastBall()
+        {
+            if (Disposed)
+                throw new ObjectDisposedException(nameof(DataImplementation));
+            if (BallsList.Count > 0)
+                BallsList.RemoveAt(BallsList.Count - 1);
+        }
 
         #endregion private
 

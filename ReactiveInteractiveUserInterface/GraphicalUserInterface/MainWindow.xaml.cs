@@ -9,6 +9,7 @@
 
 using System;
 using System.Windows;
+using System.Windows.Controls;
 using TP.ConcurrentProgramming.Presentation.ViewModel;
 
 namespace TP.ConcurrentProgramming.PresentationView
@@ -25,7 +26,7 @@ namespace TP.ConcurrentProgramming.PresentationView
       MainWindowViewModel viewModel = (MainWindowViewModel)DataContext;
       double screenWidth = SystemParameters.PrimaryScreenWidth;
       double screenHeight = SystemParameters.PrimaryScreenHeight;
-      viewModel.Start(random.Next(5, 10));
+      //viewModel.Start(random.Next(5, 10));
     }
 
     /// <summary>
@@ -38,5 +39,15 @@ namespace TP.ConcurrentProgramming.PresentationView
         viewModel.Dispose();
       base.OnClosed(e);
     }
-  }
+
+        private void StartButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is MainWindowViewModel viewModel)
+            {
+                double width = 395; 
+                double height = 415; 
+                viewModel.StartSimulationWithSize(width, height);
+            }
+        }
+    }
 }
