@@ -3,35 +3,48 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vm="clr-namespace:TP.ConcurrentProgramming.Presentation.ViewModel;assembly=TP.ConcurrentProgramming.PresentationViewModel"
-        mc:Ignorable="d"
+        xmlns:vm="clr-namespace:TP.ConcurrentProgramming.Presentation.ViewModel;assembly=TP.ConcurrentProgramming.PresentationViewModel"        mc:Ignorable="d"
         Title="Presentation layer targeting reactive behaviour" Height="auto" Width="auto">
 
     <Window.DataContext>
         <vm:MainWindowViewModel />
     </Window.DataContext>
 
-    <!-- Kontener dla piłek -->
-    <Border BorderThickness="4" BorderBrush="Green" Height="420" Width="400">
-        <Canvas x:Name="CanvasArea" Background="White">
-            <!-- Zbieranie piłek -->
-            <ItemsControl ItemsSource="{Binding Balls}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <Canvas />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Ellipse Width="{Binding Diameter}" Height="{Binding Diameter}" Fill="Blue">
-                            <Ellipse.RenderTransform>
-                                <TranslateTransform X="{Binding Left}" Y="{Binding Top}" />
-                            </Ellipse.RenderTransform>
-                        </Ellipse>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </Canvas>
-    </Border>
+    <DockPanel>
+        <!-- Panel sterowania -->
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10" HorizontalAlignment="Center">
+            <Label Content="Ilość kulek:" VerticalAlignment="Center"/>
+            <TextBox Width="50" Margin="0,0,5,0" VerticalAlignment="Center"
+             Text="{Binding BallsAmmount, UpdateSourceTrigger=PropertyChanged}"/>
+            <Button Content="Start" Width="60" Margin="10,0,0,0"/>
+            <Button Content="Stop" Width="60" Margin="10,0,0,0"/>
+            <Button Content="Dodaj" Width="60" Margin="10,0,0,0"/>
+            <Button Content="Usuń" Width="60" Margin="10,0,0,0"/>
+
+        </StackPanel>
+
+        <!-- Kontener dla piłek -->
+        <Border BorderThickness="4" BorderBrush="Green" Height="420" Width="400">
+            <Canvas x:Name="CanvasArea" Background="White">
+                <!-- Zbieranie piłek -->
+                <ItemsControl ItemsSource="{Binding Balls}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Ellipse Width="{Binding Diameter}" Height="{Binding Diameter}" Fill="Blue">
+                                <Ellipse.RenderTransform>
+                                    <TranslateTransform X="{Binding Left}" Y="{Binding Top}" />
+                                </Ellipse.RenderTransform>
+                            </Ellipse>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Canvas>
+        </Border>
+    </DockPanel>
 
 </Window>

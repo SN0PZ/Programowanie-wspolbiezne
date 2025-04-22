@@ -138,23 +138,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\kamii\\.nuget\\packages\\": {},
+    "C:\\Users\\PC\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "4.3.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\kamii\\source\\repos\\wspolbiegi_etap_1\\ReactiveInteractiveUserInterface\\PresentationModel\\PresentationModel.csproj",
+      "projectUniqueName": "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\PresentationModel\\PresentationModel.csproj",
       "projectName": "TP.ConcurrentProgramming.PresentationModel",
-      "projectPath": "C:\\Users\\kamii\\source\\repos\\wspolbiegi_etap_1\\ReactiveInteractiveUserInterface\\PresentationModel\\PresentationModel.csproj",
-      "packagesPath": "C:\\Users\\kamii\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\kamii\\source\\repos\\wspolbiegi_etap_1\\ReactiveInteractiveUserInterface\\PresentationModel\\obj\\",
+      "projectPath": "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\PresentationModel\\PresentationModel.csproj",
+      "packagesPath": "C:\\Users\\PC\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\PresentationModel\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\kamii\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\PC\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -169,8 +169,8 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Users\\kamii\\source\\repos\\wspolbiegi_etap_1\\ReactiveInteractiveUserInterface\\BusinessLogic\\BusinessLogic.csproj": {
-              "projectPath": "C:\\Users\\kamii\\source\\repos\\wspolbiegi_etap_1\\ReactiveInteractiveUserInterface\\BusinessLogic\\BusinessLogic.csproj"
+            "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\BusinessLogic\\BusinessLogic.csproj": {
+              "projectPath": "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\BusinessLogic\\BusinessLogic.csproj"
             }
           }
         }
@@ -216,7 +216,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.202/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
