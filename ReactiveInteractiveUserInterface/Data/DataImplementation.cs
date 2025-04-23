@@ -21,7 +21,7 @@ namespace TP.ConcurrentProgramming.Data
 
         public DataImplementation()
         {
-            MoveTimer = new Timer(Move, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(16));
+            MoveTimer = new Timer(Move, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(2));
         }
 
         #endregion ctor
@@ -87,7 +87,6 @@ namespace TP.ConcurrentProgramming.Data
         private Random RandomGenerator = new();
         private List<Ball> BallsList = new();
 
-        // Parametry planszy
         private double TableWidth;
         private double TableHeight;
         private const double BallRadius = 10;
@@ -106,7 +105,6 @@ namespace TP.ConcurrentProgramming.Data
                 double newVelX = ball.Velocity.x;
                 double newVelY = ball.Velocity.y;
 
-                // odbijanie 
                 if (newPosition.x <= minX || newPosition.x >= maxX)
                 {
                     newVelX *= -1;
@@ -116,7 +114,6 @@ namespace TP.ConcurrentProgramming.Data
                     );
                 }
 
-                // odbijanie od góry / dołu
                 if (newPosition.y <= minY || newPosition.y >= maxY)
                 {
                     newVelY *= -1;
@@ -126,7 +123,6 @@ namespace TP.ConcurrentProgramming.Data
                     );
                 }
 
-                // zaktualizuj prędkość i pozycję
                 ball.Velocity = new Vector(newVelX, newVelY);
                 ball.Move(newPosition - ball.Position);
             }
