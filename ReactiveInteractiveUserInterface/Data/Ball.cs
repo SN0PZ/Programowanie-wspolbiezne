@@ -14,10 +14,11 @@ namespace TP.ConcurrentProgramming.Data
     {
         #region ctor
 
-        internal Ball(Vector initialPosition, Vector initialVelocity)
+        internal Ball(Vector initialPosition, Vector initialVelocity, double mass)
         {
             Position = initialPosition;
             Velocity = initialVelocity;
+            Mass = mass;
         }
 
         #endregion ctor
@@ -33,6 +34,7 @@ namespace TP.ConcurrentProgramming.Data
         #region private
 
         public Vector Position { get; private set; }
+        public double Mass { get; }
 
         private void RaiseNewPositionChangeNotification()
         {

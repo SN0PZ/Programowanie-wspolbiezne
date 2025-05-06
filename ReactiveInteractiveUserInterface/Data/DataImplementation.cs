@@ -21,17 +21,21 @@ namespace TP.ConcurrentProgramming.Data
 
         public DataImplementation()
         {
-            MoveTimer = new Timer(Move, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(2));
+            MoveTimer = new Timer(Move, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(5));
         }
 
         #endregion ctor
 
         #region DataAbstractAPI
 
+        const double MinMass = 0.5;
+        const double MaxMass = 2.0;
+
         public override void Start(int numberOfBalls, double tableWidth, double tableHeight, Action<IVector, IBall> upperLayerHandler)
         {
             this.TableWidth = tableWidth;
             this.TableHeight = tableHeight;
+
             if (Disposed)
                 throw new ObjectDisposedException(nameof(DataImplementation));
             if (upperLayerHandler == null)
@@ -46,7 +50,8 @@ namespace TP.ConcurrentProgramming.Data
                 Vector startingPosition = new(startX, startY);
                 Vector velocity = new Vector((random.NextDouble() - 0.5) * 2, (random.NextDouble() - 0.5) * 2);
 
-                Ball newBall = new(startingPosition, velocity);
+                double mass = MinMass + RandomGenerator.NextDouble() * (MaxMass - MinMass);
+                Ball newBall = new(startingPosition, velocity, mass);
                 upperLayerHandler(startingPosition, newBall);
                 BallsList.Add(newBall);
             }
@@ -93,40 +98,76 @@ namespace TP.ConcurrentProgramming.Data
 
         private void Move(object? _)
         {
-            foreach (Ball ball in BallsList.ToList())
+            lock (BallsList) // chronimy dostęp do listy
             {
-                Vector newPosition = (Vector)ball.Position + (Vector)ball.Velocity;
-
-                double minX = 0;
-                double maxX = TableWidth - 2 * BallRadius;
-                double minY = 0;
-                double maxY = TableHeight - 2 * BallRadius;
-
-                double newVelX = ball.Velocity.x;
-                double newVelY = ball.Velocity.y;
-
-                if (newPosition.x <= minX || newPosition.x >= maxX)
+                // 1) obsłuż zderzenia kula–kula
+                int n = BallsList.Count;
+                for (int i = 0; i < n; i++)
                 {
-                    newVelX *= -1;
-                    newPosition = new Vector(
-                        Math.Clamp(newPosition.x, minX, maxX),
-                        newPosition.y
-                    );
+                    for (int j = i + 1; j < n; j++)
+                    {
+                        var A = BallsList[i];
+                        var B = BallsList[j];
+
+                        // wektory położeń
+                        var x1 = A.Position;
+                        var x2 = B.Position;
+                        var delta = x1 - x2;
+                        double dist2 = delta.Dot(delta);
+                        double minDist = 2 * BallRadius;
+                        if (dist2 <= minDist * minDist)
+                        {
+                            // zachowujemy oryginalne prędkości
+                            var v1 = A.Velocity as Vector;
+                            var v2 = B.Velocity as Vector;
+                            double m1 = A.Mass, m2 = B.Mass;
+
+                            // wzory dla sprężystego zderzenia
+                            var v1Prime = v1 - (2 * m2 / (m1 + m2))
+                                          * ((v1 - v2).Dot(delta) / dist2)
+                                          * delta;
+                            var v2Prime = v2 - (2 * m1 / (m1 + m2))
+                                          * ((v2 - v1).Dot(-delta) / dist2)
+                                          * (-delta);
+
+                            A.Velocity = v1Prime;
+                            B.Velocity = v2Prime;
+                        }
+                    }
                 }
 
-                if (newPosition.y <= minY || newPosition.y >= maxY)
+                // 2) dotychczasowa obsługa ruchu i odbić od ścian
+                foreach (Ball ball in BallsList.ToList())
                 {
-                    newVelY *= -1;
-                    newPosition = new Vector(
-                        newPosition.x,
-                        Math.Clamp(newPosition.y, minY, maxY)
-                    );
-                }
+                    Vector newPos = (Vector)ball.Position + (Vector)ball.Velocity;
+                    double newVelX = ball.Velocity.x;
+                    double newVelY = ball.Velocity.y;
 
-                ball.Velocity = new Vector(newVelX, newVelY);
-                ball.Move(newPosition - ball.Position);
+                    // odbicie od pionowych ścian
+                    if (newPos.x <= 0 || newPos.x >= TableWidth - 2 * BallRadius)
+                    {
+                        newVelX *= -1;
+                        newPos = new Vector(
+                            Math.Clamp(newPos.x, 0, TableWidth - 2 * BallRadius),
+                            newPos.y
+                        );
+                    }
+                    // odbicie od poziomych
+                    if (newPos.y <= 0 || newPos.y >= TableHeight - 2 * BallRadius)
+                    {
+                        newVelY *= -1;
+                        newPos = new Vector(
+                            newPos.x,
+                            Math.Clamp(newPos.y, 0, TableHeight - 2 * BallRadius)
+                        );
+                    }
+
+                    ball.Velocity = new Vector(newVelX, newVelY);
+                    ball.Move(newPos - ball.Position);
+                }
             }
         }
+
 
         public override void AddBall(Action<IVector, IBall> upperLayerHandler)
         {
@@ -141,7 +182,8 @@ namespace TP.ConcurrentProgramming.Data
             Vector startingPosition = new(startX, startY);
             Vector velocity = new((random.NextDouble() - 0.5) * 2, (random.NextDouble() - 0.5) * 2);
 
-            Ball newBall = new(startingPosition, velocity);
+            double mass = MinMass + RandomGenerator.NextDouble() * (MaxMass - MinMass);
+            Ball newBall = new(startingPosition, velocity, mass);
             BallsList.Add(newBall);
             upperLayerHandler(startingPosition, newBall);
         }

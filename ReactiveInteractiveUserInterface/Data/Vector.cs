@@ -11,17 +11,10 @@
 
 namespace TP.ConcurrentProgramming.Data
 {
-    /// <summary>
-    /// Two dimensions immutable vector
-    /// </summary>
     internal record Vector : IVector
     {
-        #region IVector
-
         public double x { get; init; }
         public double y { get; init; }
-
-        #endregion IVector
 
         public Vector(double XComponent, double YComponent)
         {
@@ -29,16 +22,25 @@ namespace TP.ConcurrentProgramming.Data
             y = YComponent;
         }
 
-        //operator odejmowania
+        // odejmowanie
         public static Vector operator -(Vector a, Vector b)
-        {
-            return new Vector(a.x - b.x, a.y - b.y);
-        }
+            => new Vector(a.x - b.x, a.y - b.y);
 
-        //operator dodawania
+        public static Vector operator -(Vector v)
+        => new Vector(-v.x, -v.y);
+
+        // dodawanie
         public static Vector operator +(Vector a, Vector b)
-        {
-            return new Vector(a.x + b.x, a.y + b.y);
-        }
+            => new Vector(a.x + b.x, a.y + b.y);
+
+        // mnożenie przez skalar
+        public static Vector operator *(Vector v, double s)
+            => new Vector(v.x * s, v.y * s);
+        public static Vector operator *(double s, Vector v)
+            => v * s;
+
+        // iloczyn skalarny
+        public double Dot(Vector other)
+            => x * other.x + y * other.y;
     }
 }
