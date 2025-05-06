@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\kamii\\source\\repos\\a\\ReactiveInteractiveUserInterface\\BusinessLogicTest\\BusinessLogicTest.csproj": {}
+    "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\BusinessLogicTest\\BusinessLogicTest.csproj": {}
   },
   "projects": {
-    "C:\\Users\\kamii\\source\\repos\\a\\ReactiveInteractiveUserInterface\\BusinessLogicTest\\BusinessLogicTest.csproj": {
+    "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\BusinessLogicTest\\BusinessLogicTest.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\kamii\\source\\repos\\a\\ReactiveInteractiveUserInterface\\BusinessLogicTest\\BusinessLogicTest.csproj",
+        "projectUniqueName": "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\BusinessLogicTest\\BusinessLogicTest.csproj",
         "projectName": "BusinessLogicTest",
-        "projectPath": "C:\\Users\\kamii\\source\\repos\\a\\ReactiveInteractiveUserInterface\\BusinessLogicTest\\BusinessLogicTest.csproj",
-        "packagesPath": "C:\\Users\\kamii\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\kamii\\source\\repos\\a\\ReactiveInteractiveUserInterface\\BusinessLogicTest\\obj\\",
+        "projectPath": "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\BusinessLogicTest\\BusinessLogicTest.csproj",
+        "packagesPath": "C:\\Users\\PC\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\BusinessLogicTest\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\kamii\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\PC\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -32,8 +32,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\Users\\kamii\\source\\repos\\a\\ReactiveInteractiveUserInterface\\BusinessLogic\\BusinessLogic.csproj": {
-                "projectPath": "C:\\Users\\kamii\\source\\repos\\a\\ReactiveInteractiveUserInterface\\BusinessLogic\\BusinessLogic.csproj"
+              "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\BusinessLogic\\BusinessLogic.csproj": {
+                "projectPath": "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\BusinessLogic\\BusinessLogic.csproj"
               }
             }
           }
@@ -93,24 +93,24 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.202/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\kamii\\source\\repos\\a\\ReactiveInteractiveUserInterface\\BusinessLogic\\BusinessLogic.csproj": {
+    "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\BusinessLogic\\BusinessLogic.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\kamii\\source\\repos\\a\\ReactiveInteractiveUserInterface\\BusinessLogic\\BusinessLogic.csproj",
+        "projectUniqueName": "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\BusinessLogic\\BusinessLogic.csproj",
         "projectName": "TP.ConcurrentProgramming.BusinessLogic",
-        "projectPath": "C:\\Users\\kamii\\source\\repos\\a\\ReactiveInteractiveUserInterface\\BusinessLogic\\BusinessLogic.csproj",
-        "packagesPath": "C:\\Users\\kamii\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\kamii\\source\\repos\\a\\ReactiveInteractiveUserInterface\\BusinessLogic\\obj\\",
+        "projectPath": "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\BusinessLogic\\BusinessLogic.csproj",
+        "packagesPath": "C:\\Users\\PC\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\BusinessLogic\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\kamii\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\PC\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -125,8 +125,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\kamii\\source\\repos\\a\\ReactiveInteractiveUserInterface\\Data\\Data.csproj": {
-                "projectPath": "C:\\Users\\kamii\\source\\repos\\a\\ReactiveInteractiveUserInterface\\Data\\Data.csproj"
+              "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\Data\\Data.csproj": {
+                "projectPath": "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\Data\\Data.csproj"
               }
             }
           }
@@ -168,24 +168,24 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.202/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\kamii\\source\\repos\\a\\ReactiveInteractiveUserInterface\\Data\\Data.csproj": {
+    "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\Data\\Data.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\kamii\\source\\repos\\a\\ReactiveInteractiveUserInterface\\Data\\Data.csproj",
+        "projectUniqueName": "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\Data\\Data.csproj",
         "projectName": "DataLayer",
-        "projectPath": "C:\\Users\\kamii\\source\\repos\\a\\ReactiveInteractiveUserInterface\\Data\\Data.csproj",
-        "packagesPath": "C:\\Users\\kamii\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\kamii\\source\\repos\\a\\ReactiveInteractiveUserInterface\\Data\\obj\\",
+        "projectPath": "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\Data\\Data.csproj",
+        "packagesPath": "C:\\Users\\PC\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\Data\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\kamii\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\PC\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -239,7 +239,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.202/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

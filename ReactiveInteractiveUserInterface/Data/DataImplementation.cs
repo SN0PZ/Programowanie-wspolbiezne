@@ -177,12 +177,32 @@ namespace TP.ConcurrentProgramming.Data
                 throw new ArgumentNullException(nameof(upperLayerHandler));
 
             Random random = new Random();
-            double startX = random.NextDouble() * (TableWidth - 2 * BallRadius);
-            double startY = random.NextDouble() * (TableHeight - 2 * BallRadius);
-            Vector startingPosition = new(startX, startY);
-            Vector velocity = new((random.NextDouble() - 0.5) * 2, (random.NextDouble() - 0.5) * 2);
+            bool positionIsValid;
 
+            Vector startingPosition = null;
+
+            do
+            {
+                double startX = random.NextDouble() * (TableWidth - 2 * BallRadius);
+                double startY = random.NextDouble() * (TableHeight - 2 * BallRadius);
+                startingPosition = new Vector(startX, startY);
+                positionIsValid = true;
+
+                foreach (var ball in BallsList)
+                {
+                    double distance = (startingPosition - ball.Position).Length;
+                    if (distance < 2 * BallRadius) 
+                    {
+                        positionIsValid = false;
+                        break;
+                    }
+                }
+            }
+            while (!positionIsValid);
+
+            Vector velocity = new((random.NextDouble() - 0.5) * 2, (random.NextDouble() - 0.5) * 2);
             double mass = MinMass + RandomGenerator.NextDouble() * (MaxMass - MinMass);
+
             Ball newBall = new(startingPosition, velocity, mass);
             BallsList.Add(newBall);
             upperLayerHandler(startingPosition, newBall);

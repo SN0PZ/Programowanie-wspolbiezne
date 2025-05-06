@@ -1811,23 +1811,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\kamii\\.nuget\\packages\\": {},
+    "C:\\Users\\PC\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "4.2.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\kamii\\source\\repos\\a\\ReactiveInteractiveUserInterface\\PresentationViewModelTest\\PresentationViewModelTest.csproj",
+      "projectUniqueName": "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\PresentationViewModelTest\\PresentationViewModelTest.csproj",
       "projectName": "PresentationViewModelTest",
-      "projectPath": "C:\\Users\\kamii\\source\\repos\\a\\ReactiveInteractiveUserInterface\\PresentationViewModelTest\\PresentationViewModelTest.csproj",
-      "packagesPath": "C:\\Users\\kamii\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\kamii\\source\\repos\\a\\ReactiveInteractiveUserInterface\\PresentationViewModelTest\\obj\\",
+      "projectPath": "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\PresentationViewModelTest\\PresentationViewModelTest.csproj",
+      "packagesPath": "C:\\Users\\PC\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\PresentationViewModelTest\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\kamii\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\PC\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -1842,8 +1842,8 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Users\\kamii\\source\\repos\\a\\ReactiveInteractiveUserInterface\\PresentationViewModel\\PresentationViewModel.csproj": {
-              "projectPath": "C:\\Users\\kamii\\source\\repos\\a\\ReactiveInteractiveUserInterface\\PresentationViewModel\\PresentationViewModel.csproj"
+            "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\PresentationViewModel\\PresentationViewModel.csproj": {
+              "projectPath": "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\PresentationViewModel\\PresentationViewModel.csproj"
             }
           }
         }
@@ -1899,7 +1899,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.202/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
