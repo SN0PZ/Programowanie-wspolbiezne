@@ -12,15 +12,17 @@ namespace TP.ConcurrentProgramming.BusinessLogic
 {
     internal class Ball : IBall
     {
+        private readonly Data.IBall _ball;
         public Ball(Data.IBall ball)
         {
-            ball.NewPositionNotification += RaisePositionChangeEvent;
+            _ball = ball ?? throw new ArgumentNullException(nameof(ball));
+            _ball.NewPositionNotification += RaisePositionChangeEvent;
         }
 
         #region IBall
 
         public event EventHandler<IPosition>? NewPositionNotification;
-
+        public double Mass => _ball.Mass;
         #endregion IBall
 
         #region private
