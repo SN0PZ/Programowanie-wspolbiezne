@@ -1,8 +1,4 @@
-﻿
-
-
-
-____________________________________________________________________________________________________________________________________
+﻿//____________________________________________________________________________________________________________________________________
 //
 //  Copyright (C) 2024, Mariusz Postol LODZ POLAND.
 //
@@ -35,7 +31,7 @@ namespace TP.ConcurrentProgramming.BusinessLogic.Test
       public Data.IVector Velocity { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
       public event EventHandler<Data.IVector>? NewPositionNotification;
-
+      public double Mass => 1.0;
       internal void Move()
       {
         NewPositionNotification?.Invoke(this, new VectorFixture(0.0, 0.0));

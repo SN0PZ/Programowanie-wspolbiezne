@@ -27,7 +27,10 @@ namespace TP.ConcurrentProgramming.Data.Test
       }
     }
 
-    [TestMethod]
+        double width = 395;
+        double height = 415;
+
+        [TestMethod]
     public void DisposeTestMethod()
     {
       DataImplementation newInstance = new DataImplementation();
@@ -42,7 +45,7 @@ namespace TP.ConcurrentProgramming.Data.Test
       Assert.IsNotNull(ballsList);
       newInstance.CheckNumberOfBalls(x => Assert.AreEqual<int>(0, x));
       Assert.ThrowsException<ObjectDisposedException>(() => newInstance.Dispose());
-      Assert.ThrowsException<ObjectDisposedException>(() => newInstance.Start(0, (position, ball) => { }));
+      Assert.ThrowsException<ObjectDisposedException>(() => newInstance.Start(0,width, height, (position, ball) => { }));
     }
 
     [TestMethod]
@@ -53,7 +56,7 @@ namespace TP.ConcurrentProgramming.Data.Test
         int numberOfCallbackInvoked = 0;
         int numberOfBalls2Create = 10;
         newInstance.Start(
-          numberOfBalls2Create,
+          numberOfBalls2Create,width, height,
           (startingPosition, ball) =>
           {
             numberOfCallbackInvoked++;

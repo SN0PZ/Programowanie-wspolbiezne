@@ -1,17 +1,4 @@
-﻿
-
-
-
-
-
-
-
-
-
-
-
-
-____________________________________________________________________________________________________________________________________
+﻿//____________________________________________________________________________________________________________________________________
 //
 //  Copyright (C) 2024, Mariusz Postol LODZ POLAND.
 //
@@ -40,19 +27,22 @@ namespace TP.ConcurrentProgramming.BusinessLogic.Test
     }
 
     [TestMethod]
+
     public void DisposeTestMethod()
     {
       DataLayerDisposeFixcure dataLayerFixcure = new DataLayerDisposeFixcure();
       BusinessLogicImplementation newInstance = new(dataLayerFixcure);
       Assert.IsFalse(dataLayerFixcure.Disposed);
       bool newInstanceDisposed = true;
+      double width = 395;
+       double height = 415;
       newInstance.CheckObjectDisposed(x => newInstanceDisposed = x);
       Assert.IsFalse(newInstanceDisposed);
       newInstance.Dispose();
       newInstance.CheckObjectDisposed(x => newInstanceDisposed = x);
       Assert.IsTrue(newInstanceDisposed);
       Assert.ThrowsException<ObjectDisposedException>(() => newInstance.Dispose());
-      Assert.ThrowsException<ObjectDisposedException>(() => newInstance.Start(0, (position, ball) => { }));
+      Assert.ThrowsException<ObjectDisposedException>(() => newInstance.Start(0, width, height, (position, ball) => { }));
       Assert.IsTrue(dataLayerFixcure.Disposed);
     }
 
@@ -64,8 +54,10 @@ namespace TP.ConcurrentProgramming.BusinessLogic.Test
       {
         int called = 0;
         int numberOfBalls2Create = 10;
+        double width = 395;
+        double height = 415;
         newInstance.Start(
-          numberOfBalls2Create,
+          numberOfBalls2Create,width, height,
           (startingPosition, ball) => { called++; Assert.IsNotNull(startingPosition); Assert.IsNotNull(ball); });
         Assert.AreEqual<int>(1, called);
         Assert.IsTrue(dataLayerFixcure.StartCalled);
@@ -80,11 +72,19 @@ namespace TP.ConcurrentProgramming.BusinessLogic.Test
       public override void Dispose()
       { }
 
-      public override void Start(int numberOfBalls, Action<IVector, Data.IBall> upperLayerHandler)
+      public override void Start(int numberOfBalls, double w, double h, Action<IVector, Data.IBall> upperLayerHandler)
       {
         throw new NotImplementedException();
       }
-    }
+      public override void AddBall(Action<IVector, Data.IBall> upperLayerHandler)
+      {
+        throw new NotImplementedException();
+      }
+      public override void RemoveLastBall()
+      {
+        throw new NotImplementedException();
+      }
+     }
 
     private class DataLayerDisposeFixcure : Data.DataAbstractAPI
     {
@@ -95,11 +95,19 @@ namespace TP.ConcurrentProgramming.BusinessLogic.Test
         Disposed = true;
       }
 
-      public override void Start(int numberOfBalls, Action<IVector, Data.IBall> upperLayerHandler)
+      public override void Start(int numberOfBalls,double w, double h, Action<IVector, Data.IBall> upperLayerHandler)
       {
         throw new NotImplementedException();
       }
-    }
+            public override void AddBall(Action<IVector, Data.IBall> upperLayerHandler)
+            {
+                throw new NotImplementedException();
+            }
+            public override void RemoveLastBall()
+            {
+                throw new NotImplementedException();
+            }
+        }
 
     private class DataLayerStartFixcure : Data.DataAbstractAPI
     {
@@ -109,7 +117,7 @@ namespace TP.ConcurrentProgramming.BusinessLogic.Test
       public override void Dispose()
       { }
 
-      public override void Start(int numberOfBalls, Action<IVector, Data.IBall> upperLayerHandler)
+      public override void Start(int numberOfBalls, double w, double h, Action<IVector, Data.IBall> upperLayerHandler)
       {
         StartCalled = true;
         NumberOfBallseCreated = numberOfBalls;
@@ -127,8 +135,17 @@ namespace TP.ConcurrentProgramming.BusinessLogic.Test
         public IVector Velocity { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public event EventHandler<IVector>? NewPositionNotification = null;
-      }
-    }
+        public double Mass => 1.0;
+            }
+            public override void AddBall(Action<IVector, Data.IBall> upperLayerHandler)
+            {
+                throw new NotImplementedException();
+            }
+            public override void RemoveLastBall()
+            {
+                throw new NotImplementedException();
+            }
+        }
 
     #endregion testing instrumentation
   }
