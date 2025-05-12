@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "AAgSEGylaug=",
+  "dgSpecHash": "vGP3LcjOmSk=",
   "success": true,
-  "projectFilePath": "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\PresentationViewModel\\PresentationViewModel.csproj",
+  "projectFilePath": "C:\\Users\\kamii\\source\\repos\\etap2\\ReactiveInteractiveUserInterface\\PresentationViewModel\\PresentationViewModel.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\PC\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
-    "C:\\Users\\PC\\.nuget\\packages\\system.reactive\\6.0.1\\system.reactive.6.0.1.nupkg.sha512"
+    "C:\\Users\\kamii\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
+    "C:\\Users\\kamii\\.nuget\\packages\\system.reactive\\6.0.1\\system.reactive.6.0.1.nupkg.sha512"
   ],
   "logs": []
 }
