@@ -21,7 +21,6 @@ namespace TP.ConcurrentProgramming.Data
 
         public DataImplementation()
         {
-            MoveTimer = new Timer(Move, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(5));
         }
 
         #endregion ctor
@@ -68,13 +67,19 @@ namespace TP.ConcurrentProgramming.Data
             {
                 if (disposing)
                 {
-                    MoveTimer.Dispose();
                     BallsList.Clear();
                 }
                 Disposed = true;
             }
             else
                 throw new ObjectDisposedException(nameof(DataImplementation));
+        }
+
+        public override void MoveBall(IBall ball, IVector delta)
+        {
+            var b = (Ball)ball;
+            var dv = new Vector(delta.x, delta.y);
+            b.Move(dv);
         }
 
         public override void Dispose()
@@ -88,7 +93,6 @@ namespace TP.ConcurrentProgramming.Data
         #region private
 
         private bool Disposed = false;
-        private readonly Timer MoveTimer;
         private Random RandomGenerator = new();
         private List<Ball> BallsList = new();
 
@@ -96,79 +100,7 @@ namespace TP.ConcurrentProgramming.Data
         private double TableHeight;
         private const double BallRadius = 10;
 
-        private void Move(object? _)
-        {
-            lock (BallsList) // chronimy dostęp do listy
-            {
-                // 1) obsłuż zderzenia kula–kula
-                int n = BallsList.Count;
-                for (int i = 0; i < n; i++)
-                {
-                    for (int j = i + 1; j < n; j++)
-                    {
-                        var A = BallsList[i];
-                        var B = BallsList[j];
-
-                        // wektory położeń
-                        var x1 = A.Position;
-                        var x2 = B.Position;
-                        var delta = x1 - x2;
-                        double dist2 = delta.Dot(delta);
-                        double minDist = 2 * BallRadius;
-                        if (dist2 <= minDist * minDist)
-                        {
-                            // zachowujemy oryginalne prędkości
-                            var v1 = A.Velocity as Vector;
-                            var v2 = B.Velocity as Vector;
-                            double m1 = A.Mass, m2 = B.Mass;
-
-                            // wzory dla sprężystego zderzenia
-                            var v1Prime = v1 - (2 * m2 / (m1 + m2))
-                                          * ((v1 - v2).Dot(delta) / dist2)
-                                          * delta;
-                            var v2Prime = v2 - (2 * m1 / (m1 + m2))
-                                          * ((v2 - v1).Dot(-delta) / dist2)
-                                          * (-delta);
-
-                            A.Velocity = v1Prime;
-                            B.Velocity = v2Prime;
-                        }
-                    }
-                }
-
-                // 2) dotychczasowa obsługa ruchu i odbić od ścian
-                foreach (Ball ball in BallsList.ToList())
-                {
-                    Vector newPos = (Vector)ball.Position + (Vector)ball.Velocity;
-                    double newVelX = ball.Velocity.x;
-                    double newVelY = ball.Velocity.y;
-
-                    // odbicie od pionowych ścian
-                    if (newPos.x <= 0 || newPos.x >= TableWidth - 2 * BallRadius)
-                    {
-                        newVelX *= -1;
-                        newPos = new Vector(
-                            Math.Clamp(newPos.x, 0, TableWidth - 2 * BallRadius),
-                            newPos.y
-                        );
-                    }
-                    // odbicie od poziomych
-                    if (newPos.y <= 0 || newPos.y >= TableHeight - 2 * BallRadius)
-                    {
-                        newVelY *= -1;
-                        newPos = new Vector(
-                            newPos.x,
-                            Math.Clamp(newPos.y, 0, TableHeight - 2 * BallRadius)
-                        );
-                    }
-
-                    ball.Velocity = new Vector(newVelX, newVelY);
-                    ball.Move(newPos - ball.Position);
-                }
-            }
-        }
-
-
+        
         public override void AddBall(Action<IVector, IBall> upperLayerHandler)
         {
             if (Disposed)

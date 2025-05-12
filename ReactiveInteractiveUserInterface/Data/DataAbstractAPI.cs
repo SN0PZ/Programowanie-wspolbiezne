@@ -26,6 +26,7 @@ namespace TP.ConcurrentProgramming.Data
         public abstract void Start(int numberOfBalls, double tableWidth, double tableHeight, Action<IVector, IBall> upperLayerHandler);
         public abstract void AddBall(Action<IVector, IBall> upperLayerHandler);
         public abstract void RemoveLastBall();
+        public abstract void MoveBall(IBall ball, IVector delta);
 
 
         #endregion public API
