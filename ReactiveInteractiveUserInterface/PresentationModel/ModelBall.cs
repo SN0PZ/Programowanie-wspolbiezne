@@ -19,35 +19,36 @@ namespace TP.ConcurrentProgramming.Presentation.Model
 {
     internal class ModelBall : IBall
     {
-        public ModelBall(double top, double left, LogicIBall underneathBall)
+        #region IBall
+        private double topBackingField;
+        private double leftBackingField;
+
+        public ModelBall(double centerX, double centerY, LogicIBall underneathBall, double diameter)
         {
-            TopBackingField = top;
-            LeftBackingField = left;
+            Diameter = diameter;
+            topBackingField = centerY - diameter / 2;
+            leftBackingField = centerX - diameter / 2;
             underneathBall.NewPositionNotification += NewPositionNotification;
         }
 
-        #region IBall
-
         public double Top
         {
-            get { return TopBackingField; }
+            get => topBackingField;
             private set
             {
-                if (TopBackingField == value)
-                    return;
-                TopBackingField = value;
+                if (topBackingField == value) return;
+                topBackingField = value;
                 RaisePropertyChanged();
             }
         }
 
         public double Left
         {
-            get { return LeftBackingField; }
+            get => leftBackingField;
             private set
             {
-                if (LeftBackingField == value)
-                    return;
-                LeftBackingField = value;
+                if (leftBackingField == value) return;
+                leftBackingField = value;
                 RaisePropertyChanged();
             }
         }
@@ -63,13 +64,10 @@ namespace TP.ConcurrentProgramming.Presentation.Model
         #endregion IBall
 
         #region private
-
-        private double TopBackingField;
-        private double LeftBackingField;
-
         private void NewPositionNotification(object sender, IPosition e)
         {
-            Top = e.y; Left = e.x;
+            Top = e.y - Diameter / 2;
+            Left = e.x - Diameter / 2;
         }
 
         private void RaisePropertyChanged([CallerMemberName] string propertyName = "")

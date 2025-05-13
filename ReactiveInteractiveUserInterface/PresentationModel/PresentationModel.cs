@@ -46,8 +46,7 @@ namespace TP.ConcurrentProgramming.Presentation.Model
         private void BallCreatedHandler(IPosition position, BusinessLogic.IBall ball)
         {
             double diameter = MassToDiameter(ball.Mass);
-            var newBall = new ModelBall(position.x, position.y, ball)
-            { Diameter = diameter };
+            var newBall = new ModelBall(position.x, position.y, ball, diameter);
             BallChanged?.Invoke(this, new BallChangedEventArgs { Ball = newBall });
         }
 
@@ -56,7 +55,7 @@ namespace TP.ConcurrentProgramming.Presentation.Model
             _logicLayer.AddBall((pos, logicBall) =>
             {
                 double diameter = MassToDiameter(logicBall.Mass);
-                var modelBall = new ModelBall(pos.x, pos.y, logicBall) { Diameter = diameter };
+                var modelBall = new ModelBall(pos.x, pos.y, logicBall, diameter);
                 observer(modelBall);
             });
         }

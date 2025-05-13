@@ -11,96 +11,78 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
 
 namespace TP.ConcurrentProgramming.Data
 {
     internal class DataImplementation : DataAbstractAPI
     {
         #region ctor
-
-        public DataImplementation()
-        {
-        }
-
-        #endregion ctor
+        public DataImplementation() { }
+        #endregion
 
         #region DataAbstractAPI
 
         const double MinMass = 0.5;
         const double MaxMass = 2.0;
+        const double MinDiam = 10.0;
+        const double MaxDiam = 20.0;
+
+        private static double MassToDiameter(double mass)
+            => MinDiam + (mass - MinMass) / (MaxMass - MinMass) * (MaxDiam - MinDiam);
+
+        private static double MassToRadius(double mass)
+            => MassToDiameter(mass) / 2;
 
         public override void Start(int numberOfBalls, double tableWidth, double tableHeight, Action<IVector, IBall> upperLayerHandler)
         {
-            this.TableWidth = tableWidth;
-            this.TableHeight = tableHeight;
-
             if (Disposed)
                 throw new ObjectDisposedException(nameof(DataImplementation));
             if (upperLayerHandler == null)
                 throw new ArgumentNullException(nameof(upperLayerHandler));
 
+            TableWidth = tableWidth;
+            TableHeight = tableHeight;
+
             Random random = new Random();
+            BallsList.Clear();
+
             for (int i = 0; i < numberOfBalls; i++)
             {
-                double startX = random.NextDouble() * (TableWidth - 2 * BallRadius);
-                double startY = random.NextDouble() * (TableHeight - 2 * BallRadius);
+                // wygeneruj masę i promień
+                double mass = MinMass + random.NextDouble() * (MaxMass - MinMass);
+                double radius = MassToRadius(mass);
 
-                Vector startingPosition = new(startX, startY);
-                Vector velocity = new Vector((random.NextDouble() - 0.5) * 2, (random.NextDouble() - 0.5) * 2);
-
-                double mass = MinMass + RandomGenerator.NextDouble() * (MaxMass - MinMass);
-                Ball newBall = new(startingPosition, velocity, mass);
-                upperLayerHandler(startingPosition, newBall);
-                BallsList.Add(newBall);
-            }
-        }
-
-
-        #endregion DataAbstractAPI
-
-        #region IDisposable
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!Disposed)
-            {
-                if (disposing)
+                // znajdź pozycję, która nie zachodzi na inne kule
+                Vector pos;
+                bool ok;
+                do
                 {
-                    BallsList.Clear();
-                }
-                Disposed = true;
+                    ok = true;
+                    double x = random.NextDouble() * (TableWidth - 2 * radius) + radius;
+                    double y = random.NextDouble() * (TableHeight - 2 * radius) + radius;
+                    pos = new Vector(x, y);
+
+                    foreach (var other in BallsList)
+                    {
+                        double otherR = MassToRadius(other.Mass);
+                        if ((pos - other.Position).Length < radius + otherR)
+                        {
+                            ok = false;
+                            break;
+                        }
+                    }
+                } while (!ok);
+
+                // prędkość
+                Vector vel = new Vector((random.NextDouble() - 0.5) * 2, (random.NextDouble() - 0.5) * 2);
+
+                // utwórz kulę
+                var newBall = new Ball(pos, vel, mass);
+                BallsList.Add(newBall);
+                upperLayerHandler(pos, newBall);
             }
-            else
-                throw new ObjectDisposedException(nameof(DataImplementation));
         }
 
-        public override void MoveBall(IBall ball, IVector delta)
-        {
-            var b = (Ball)ball;
-            var dv = new Vector(delta.x, delta.y);
-            b.Move(dv);
-        }
-
-        public override void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-
-        #endregion IDisposable
-
-        #region private
-
-        private bool Disposed = false;
-        private Random RandomGenerator = new();
-        private List<Ball> BallsList = new();
-
-        private double TableWidth;
-        private double TableHeight;
-        private const double BallRadius = 10;
-
-        
         public override void AddBall(Action<IVector, IBall> upperLayerHandler)
         {
             if (Disposed)
@@ -109,35 +91,39 @@ namespace TP.ConcurrentProgramming.Data
                 throw new ArgumentNullException(nameof(upperLayerHandler));
 
             Random random = new Random();
-            bool positionIsValid;
 
-            Vector startingPosition = null;
+            // wygeneruj masę i promień
+            double mass = MinMass + random.NextDouble() * (MaxMass - MinMass);
+            double radius = MassToRadius(mass);
 
+            // znajdź pozycję bez zachodzenia
+            Vector pos;
+            bool ok;
             do
             {
-                double startX = random.NextDouble() * (TableWidth - 2 * BallRadius);
-                double startY = random.NextDouble() * (TableHeight - 2 * BallRadius);
-                startingPosition = new Vector(startX, startY);
-                positionIsValid = true;
+                ok = true;
+                double x = random.NextDouble() * (TableWidth - 2 * radius) + radius;
+                double y = random.NextDouble() * (TableHeight - 2 * radius) + radius;
+                pos = new Vector(x, y);
 
-                foreach (var ball in BallsList)
+                foreach (var other in BallsList)
                 {
-                    double distance = (startingPosition - ball.Position).Length;
-                    if (distance < 2 * BallRadius) 
+                    double otherR = MassToRadius(other.Mass);
+                    if ((pos - other.Position).Length < radius + otherR)
                     {
-                        positionIsValid = false;
+                        ok = false;
                         break;
                     }
                 }
-            }
-            while (!positionIsValid);
+            } while (!ok);
 
-            Vector velocity = new((random.NextDouble() - 0.5) * 2, (random.NextDouble() - 0.5) * 2);
-            double mass = MinMass + RandomGenerator.NextDouble() * (MaxMass - MinMass);
+            // prędkość
+            Vector vel = new Vector((random.NextDouble() - 0.5) * 2, (random.NextDouble() - 0.5) * 2);
 
-            Ball newBall = new(startingPosition, velocity, mass);
+            // utwórz kulę
+            var newBall = new Ball(pos, vel, mass);
             BallsList.Add(newBall);
-            upperLayerHandler(startingPosition, newBall);
+            upperLayerHandler(pos, newBall);
         }
 
         public override void RemoveLastBall()
@@ -148,28 +134,60 @@ namespace TP.ConcurrentProgramming.Data
                 BallsList.RemoveAt(BallsList.Count - 1);
         }
 
-        #endregion private
+
+        #endregion
+
+        #region IDisposable
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!Disposed)
+            {
+                if (disposing)
+                    BallsList.Clear();
+                Disposed = true;
+            }
+            else
+                throw new ObjectDisposedException(nameof(DataImplementation));
+        }
+
+        public override void MoveBall(IBall ball, IVector delta)
+        {
+            var b = (Ball)ball;
+            b.Move(new Vector(delta.x, delta.y));
+        }
+
+        public override void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
+        #region private
+
+        private bool Disposed = false;
+        private List<Ball> BallsList = new();
+        private double TableWidth;
+        private double TableHeight;
+
+        #endregion
 
         #region TestingInfrastructure
 
         [Conditional("DEBUG")]
         internal void CheckBallsList(Action<IEnumerable<IBall>> returnBallsList)
-        {
-            returnBallsList(BallsList);
-        }
+            => returnBallsList(BallsList);
 
         [Conditional("DEBUG")]
         internal void CheckNumberOfBalls(Action<int> returnNumberOfBalls)
-        {
-            returnNumberOfBalls(BallsList.Count);
-        }
+            => returnNumberOfBalls(BallsList.Count);
 
         [Conditional("DEBUG")]
         internal void CheckObjectDisposed(Action<bool> returnInstanceDisposed)
-        {
-            returnInstanceDisposed(Disposed);
-        }
+            => returnInstanceDisposed(Disposed);
 
-        #endregion TestingInfrastructure
+        #endregion
     }
 }
