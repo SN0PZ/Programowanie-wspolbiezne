@@ -55,23 +55,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\PC\\.nuget\\packages\\": {},
+    "C:\\Users\\kamii\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\Data\\Data.csproj",
+      "projectUniqueName": "C:\\Users\\kamii\\source\\repos\\eettaapp22\\ReactiveInteractiveUserInterface\\Data\\Data.csproj",
       "projectName": "DataLayer",
-      "projectPath": "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\Data\\Data.csproj",
-      "packagesPath": "C:\\Users\\PC\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\PC\\source\\repos\\SN0PZ\\Programowanie-wspolbiezne\\ReactiveInteractiveUserInterface\\Data\\obj\\",
+      "projectPath": "C:\\Users\\kamii\\source\\repos\\eettaapp22\\ReactiveInteractiveUserInterface\\Data\\Data.csproj",
+      "packagesPath": "C:\\Users\\kamii\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\kamii\\source\\repos\\eettaapp22\\ReactiveInteractiveUserInterface\\Data\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\PC\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\kamii\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -125,7 +125,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.202/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

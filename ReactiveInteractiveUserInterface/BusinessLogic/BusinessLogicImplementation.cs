@@ -1,17 +1,8 @@
-﻿//____________________________________________________________________________________________________________________________________
-//
-//  Copyright (C) 2024, Mariusz Postol LODZ POLAND.
-//
-//  To be in touch join the community by pressing the `Watch` button and get started commenting using the discussion panel at
-//
-//  https://github.com/mpostol/TP/discussions/182
-//
-//_____________________________________________________________________________________________________________________________________
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using UnderneathLayerAPI = TP.ConcurrentProgramming.Data.DataAbstractAPI;
 using Data = TP.ConcurrentProgramming.Data;
 
@@ -20,9 +11,9 @@ namespace TP.ConcurrentProgramming.BusinessLogic
     internal class BusinessLogicImplementation : BusinessLogicAbstractAPI
     {
         private readonly List<BallState> _balls = new();
-        private Timer _timer;
         private double _tableW, _tableH;
         private readonly UnderneathLayerAPI layerBellow;
+        private CancellationTokenSource? _cts;
         private bool Disposed = false;
 
         // mapping masa → rozmiar
@@ -33,11 +24,16 @@ namespace TP.ConcurrentProgramming.BusinessLogic
         private static double MassToRadius(double m)
             => MassToDiameter(m) / 2;
 
-        public BusinessLogicImplementation() : this(null) { }
-        internal BusinessLogicImplementation(UnderneathLayerAPI? underneathLayer)
-            => layerBellow = underneathLayer == null
-                  ? UnderneathLayerAPI.GetDataLayer()
-                  : underneathLayer;
+        // Domyślny konstruktor korzystający z GetDataLayer()
+        public BusinessLogicImplementation()
+            : this(UnderneathLayerAPI.GetDataLayer())
+        { }
+
+        // Konstruktor przyjmujący warstwę danych
+        internal BusinessLogicImplementation(UnderneathLayerAPI underneathLayer)
+        {
+            layerBellow = underneathLayer;
+        }
 
         private class RawVector : Data.IVector
         {
@@ -49,7 +45,8 @@ namespace TP.ConcurrentProgramming.BusinessLogic
         public override void Start(int numberOfBalls, double tableWidth, double tableHeight, Action<IPosition, IBall> upperLayerHandler)
         {
             if (Disposed) throw new ObjectDisposedException(nameof(BusinessLogicImplementation));
-            _tableW = tableWidth; _tableH = tableHeight;
+            _tableW = tableWidth;
+            _tableH = tableHeight;
 
             layerBellow.Start(numberOfBalls, tableWidth, tableHeight,
                 (vec, dataBall) =>
@@ -70,9 +67,25 @@ namespace TP.ConcurrentProgramming.BusinessLogic
                     );
                 });
 
-            _timer = new Timer(_ => DoStep(), null,
-                               TimeSpan.Zero,
-                               TimeSpan.FromMilliseconds(5));
+            // Przygotuj token anulowania i uruchom pętlę symulacji
+            _cts = new CancellationTokenSource();
+            _ = Task.Run(() => RunLoopAsync(_cts.Token));
+        }
+
+        private async Task RunLoopAsync(CancellationToken token)
+        {
+            try
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    DoStep();
+                    await Task.Delay(5, token); // 5 ms delay
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // normalne zakończenie pętli
+            }
         }
 
         private void DoStep()
@@ -93,6 +106,7 @@ namespace TP.ConcurrentProgramming.BusinessLogic
         public override void AddBall(Action<IPosition, IBall> upperLayerHandler)
         {
             if (Disposed) throw new ObjectDisposedException(nameof(BusinessLogicImplementation));
+
             layerBellow.AddBall((vec, dataBall) =>
             {
                 double r = MassToRadius(dataBall.Mass);
@@ -114,8 +128,7 @@ namespace TP.ConcurrentProgramming.BusinessLogic
 
         public override void RemoveLastBall()
         {
-            if (Disposed)
-                throw new ObjectDisposedException(nameof(BusinessLogicImplementation));
+            if (Disposed) throw new ObjectDisposedException(nameof(BusinessLogicImplementation));
 
             lock (_balls)
             {
@@ -128,6 +141,7 @@ namespace TP.ConcurrentProgramming.BusinessLogic
         public override void Dispose()
         {
             if (Disposed) throw new ObjectDisposedException(nameof(BusinessLogicImplementation));
+            _cts?.Cancel();
             layerBellow.Dispose();
             Disposed = true;
         }
