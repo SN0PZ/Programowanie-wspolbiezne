@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnderneathLayerAPI = TP.ConcurrentProgramming.Data.DataAbstractAPI;
 using Data = TP.ConcurrentProgramming.Data;
+using System.Diagnostics;
 
 namespace TP.ConcurrentProgramming.BusinessLogic
 {
@@ -67,7 +68,6 @@ namespace TP.ConcurrentProgramming.BusinessLogic
                     );
                 });
 
-            // Przygotuj token anulowania i uruchom pętlę symulacji
             _cts = new CancellationTokenSource();
             _ = Task.Run(() => RunLoopAsync(_cts.Token));
         }
@@ -84,7 +84,6 @@ namespace TP.ConcurrentProgramming.BusinessLogic
             }
             catch (OperationCanceledException)
             {
-                // normalne zakończenie pętli
             }
         }
 
@@ -140,10 +139,17 @@ namespace TP.ConcurrentProgramming.BusinessLogic
 
         public override void Dispose()
         {
-            if (Disposed) throw new ObjectDisposedException(nameof(BusinessLogicImplementation));
+            if (Disposed)
+                throw new ObjectDisposedException(nameof(BusinessLogicImplementation));
             _cts?.Cancel();
             layerBellow.Dispose();
             Disposed = true;
+        }
+
+        [Conditional("DEBUG")]
+        internal void CheckObjectDisposed(Action<bool> returnInstanceDisposed)
+        {
+            returnInstanceDisposed(Disposed);
         }
     }
 }
