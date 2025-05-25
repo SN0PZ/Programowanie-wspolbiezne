@@ -1,57 +1,44 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Threading;
 using TP.ConcurrentProgramming.BusinessLogic;
 
 namespace TP.ConcurrentProgramming.Presentation.Model
 {
     internal class PresentationModel : ModelAbstractApi
     {
+        private readonly BusinessLogicAbstractAPI _logicLayer;
+        private readonly IObservable<EventPattern<BallChangedEventArgs>> _eventStream;
+        private readonly SynchronizationContext _uiContext;
+        private bool _disposed = false;
+
         public PresentationModel() : this(null) { }
 
         public PresentationModel(BusinessLogicAbstractAPI logicLayer)
         {
             _logicLayer = logicLayer ?? BusinessLogicAbstractAPI.GetBusinessLogicLayer();
-            _eventStream = Observable.FromEventPattern<BallChangedEventArgs>(this, nameof(BallChanged));
+
+            _uiContext = SynchronizationContext.Current
+                         ?? throw new InvalidOperationException("PresentationModel must be created on UI thread");
+
+            var src = Observable.FromEventPattern<BallChangedEventArgs>(
+                this, nameof(BallChanged));
+            _eventStream = src.ObserveOn(_uiContext);
         }
 
         public override void Start(int numberOfBalls, double tableWidth, double tableHeight)
         {
+            if (_disposed) throw new ObjectDisposedException(nameof(PresentationModel));
             _logicLayer.Start(numberOfBalls, tableWidth, tableHeight, BallCreatedHandler);
         }
 
         public override IDisposable Subscribe(IObserver<IBall> observer)
-        {
-            return _eventStream.Subscribe(x => observer.OnNext(x.EventArgs.Ball));
-        }
-
-        public override void Dispose()
-        {
-            if (_disposed)
-                return;
-
-            _logicLayer.Dispose();
-            _disposed = true;
-        }
-
-        public event EventHandler<BallChangedEventArgs>? BallChanged;
-
-        #region Helpers
-
-        private bool _disposed = false;
-        private readonly BusinessLogicAbstractAPI _logicLayer;
-        private readonly IObservable<EventPattern<BallChangedEventArgs>> _eventStream;
-
-        private void BallCreatedHandler(IPosition position, BusinessLogic.IBall ball)
-        {
-            double diameter = MassToDiameter(ball.Mass);
-            var newBall = new ModelBall(position.x, position.y, ball, diameter);
-            BallChanged?.Invoke(this, new BallChangedEventArgs { Ball = newBall });
-        }
+            => _eventStream.Subscribe(x => observer.OnNext(x.EventArgs.Ball));
 
         public override void AddBall(Action<IBall> observer)
         {
+            if (_disposed) throw new ObjectDisposedException(nameof(PresentationModel));
             _logicLayer.AddBall((pos, logicBall) =>
             {
                 double diameter = MassToDiameter(logicBall.Mass);
@@ -62,8 +49,26 @@ namespace TP.ConcurrentProgramming.Presentation.Model
 
         public override void RemoveLastBall()
         {
+            if (_disposed) throw new ObjectDisposedException(nameof(PresentationModel));
             _logicLayer.RemoveLastBall();
         }
+
+        public override void Dispose()
+        {
+            if (_disposed) return;
+            _logicLayer.Dispose();
+            _disposed = true;
+        }
+
+        public event EventHandler<BallChangedEventArgs>? BallChanged;
+
+        private void BallCreatedHandler(IPosition position, BusinessLogic.IBall ball)
+        {
+            double diameter = MassToDiameter(ball.Mass);
+            var newBall = new ModelBall(position.x, position.y, ball, diameter);
+            BallChanged?.Invoke(this, new BallChangedEventArgs { Ball = newBall });
+        }
+
         private static double MassToDiameter(double mass)
         {
             const double minMass = 0.5, maxMass = 2.0;
@@ -71,8 +76,6 @@ namespace TP.ConcurrentProgramming.Presentation.Model
             var m = Math.Clamp(mass, minMass, maxMass);
             return minDiam + (m - minMass) / (maxMass - minMass) * (maxDiam - minDiam);
         }
-
-        #endregion
     }
 
     public class BallChangedEventArgs : EventArgs

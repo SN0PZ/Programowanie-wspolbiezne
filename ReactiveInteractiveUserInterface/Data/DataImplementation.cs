@@ -7,7 +7,6 @@
 //  https://github.com/mpostol/TP/discussions/182
 //
 //_____________________________________________________________________________________________________________________________________
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,177 +15,104 @@ namespace TP.ConcurrentProgramming.Data
 {
     internal class DataImplementation : DataAbstractAPI
     {
-        #region ctor
-        public DataImplementation() { }
-        #endregion
+        private readonly List<Ball> _balls = new();
+        private bool _disposed;
+        private double _tableW, _tableH;
+        private readonly Random _rnd = new();
 
-        #region DataAbstractAPI
-
-        const double MinMass = 0.5;
-        const double MaxMass = 2.0;
-        const double MinDiam = 10.0;
-        const double MaxDiam = 20.0;
-
-        private static double MassToDiameter(double mass)
-            => MinDiam + (mass - MinMass) / (MaxMass - MinMass) * (MaxDiam - MinDiam);
-
-        private static double MassToRadius(double mass)
-            => MassToDiameter(mass) / 2;
-
-        public override void Start(int numberOfBalls, double tableWidth, double tableHeight, Action<IVector, IBall> upperLayerHandler)
+        public override void Start(
+            int numberOfBalls,
+            double tableWidth,
+            double tableHeight,
+            Action<IVector, IBall> creationHandler)
         {
-            if (Disposed)
-                throw new ObjectDisposedException(nameof(DataImplementation));
-            if (upperLayerHandler == null)
-                throw new ArgumentNullException(nameof(upperLayerHandler));
+            if (_disposed) throw new ObjectDisposedException(nameof(DataImplementation));
+            if (creationHandler == null) throw new ArgumentNullException(nameof(creationHandler));
 
-            TableWidth = tableWidth;
-            TableHeight = tableHeight;
+            _tableW = tableWidth;
+            _tableH = tableHeight;
 
-            Random random = new Random();
-            BallsList.Clear();
+            foreach (var b in _balls) b.Dispose();
+            _balls.Clear();
 
             for (int i = 0; i < numberOfBalls; i++)
-            {
-                // wygeneruj masę i promień
-                double mass = MinMass + random.NextDouble() * (MaxMass - MinMass);
-                double radius = MassToRadius(mass);
-
-                // znajdź pozycję, która nie zachodzi na inne kule
-                Vector pos;
-                bool ok;
-                do
-                {
-                    ok = true;
-                    double x = random.NextDouble() * (TableWidth - 2 * radius) + radius;
-                    double y = random.NextDouble() * (TableHeight - 2 * radius) + radius;
-                    pos = new Vector(x, y);
-
-                    foreach (var other in BallsList)
-                    {
-                        double otherR = MassToRadius(other.Mass);
-                        if ((pos - other.Position).Length < radius + otherR)
-                        {
-                            ok = false;
-                            break;
-                        }
-                    }
-                } while (!ok);
-
-                // prędkość
-                Vector vel = new Vector((random.NextDouble() - 0.5) * 2, (random.NextDouble() - 0.5) * 2);
-
-                // utwórz kulę
-                var newBall = new Ball(pos, vel, mass);
-                BallsList.Add(newBall);
-                upperLayerHandler(pos, newBall);
-            }
+                CreateAndRegisterBall(creationHandler);
         }
 
-        public override void AddBall(Action<IVector, IBall> upperLayerHandler)
+        public override void AddBall(Action<IVector, IBall> creationHandler)
         {
-            if (Disposed)
-                throw new ObjectDisposedException(nameof(DataImplementation));
-            if (upperLayerHandler == null)
-                throw new ArgumentNullException(nameof(upperLayerHandler));
+            if (_disposed) throw new ObjectDisposedException(nameof(DataImplementation));
+            if (creationHandler == null) throw new ArgumentNullException(nameof(creationHandler));
 
-            Random random = new Random();
+            CreateAndRegisterBall(creationHandler);
+        }
 
-            // wygeneruj masę i promień
-            double mass = MinMass + random.NextDouble() * (MaxMass - MinMass);
+        private void CreateAndRegisterBall(Action<IVector, IBall> creationHandler)
+        {
+            double mass = 0.5 + _rnd.NextDouble() * 1.5;
             double radius = MassToRadius(mass);
 
-            // znajdź pozycję bez zachodzenia
-            Vector pos;
-            bool ok;
-            do
-            {
-                ok = true;
-                double x = random.NextDouble() * (TableWidth - 2 * radius) + radius;
-                double y = random.NextDouble() * (TableHeight - 2 * radius) + radius;
-                pos = new Vector(x, y);
+            double x = _rnd.NextDouble() * (_tableW - 2 * radius) + radius;
+            double y = _rnd.NextDouble() * (_tableH - 2 * radius) + radius;
+            var pos = new Vector(x, y);
 
-                foreach (var other in BallsList)
-                {
-                    double otherR = MassToRadius(other.Mass);
-                    if ((pos - other.Position).Length < radius + otherR)
-                    {
-                        ok = false;
-                        break;
-                    }
-                }
-            } while (!ok);
+            var vel = new Vector(
+                (_rnd.NextDouble() - 0.5) * 2,
+                (_rnd.NextDouble() - 0.5) * 2
+            );
 
-            // prędkość
-            Vector vel = new Vector((random.NextDouble() - 0.5) * 2, (random.NextDouble() - 0.5) * 2);
-
-            // utwórz kulę
-            var newBall = new Ball(pos, vel, mass);
-            BallsList.Add(newBall);
-            upperLayerHandler(pos, newBall);
+            var ball = new Ball(pos, vel, mass, _tableW, _tableH);
+            _balls.Add(ball);
+            creationHandler(pos, ball);
         }
 
         public override void RemoveLastBall()
         {
-            if (Disposed)
-                throw new ObjectDisposedException(nameof(DataImplementation));
-            if (BallsList.Count > 0)
-                BallsList.RemoveAt(BallsList.Count - 1);
-        }
+            if (_disposed) throw new ObjectDisposedException(nameof(DataImplementation));
+            if (_balls.Count == 0) return;
 
-
-        #endregion
-
-        #region IDisposable
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!Disposed)
-            {
-                if (disposing)
-                    BallsList.Clear();
-                Disposed = true;
-            }
-            else
-                throw new ObjectDisposedException(nameof(DataImplementation));
+            var last = _balls[^1];
+            _balls.RemoveAt(_balls.Count - 1);
+            last.Dispose();
         }
 
         public override void MoveBall(IBall ball, IVector delta)
         {
-            var b = (Ball)ball;
-            b.Move(new Vector(delta.x, delta.y));
+            if (_disposed) throw new ObjectDisposedException(nameof(DataImplementation));
+            ((Ball)ball).Move(new Vector(delta.x, delta.y));
         }
 
         public override void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            if (_disposed) throw new ObjectDisposedException(nameof(DataImplementation));
+            foreach (var b in _balls) b.Dispose();
+            _balls.Clear();
+            _disposed = true;
         }
 
+        #region TestingInstrumentation (DEBUG)
+
+        [Conditional("DEBUG")]
+        internal void CheckBallsList(Action<IEnumerable<IBall>> cb)
+            => cb(_balls);
+
+        [Conditional("DEBUG")]
+        internal void CheckNumberOfBalls(Action<int> cb)
+            => cb(_balls.Count);
+
+        [Conditional("DEBUG")]
+        internal void CheckObjectDisposed(Action<bool> cb)
+            => cb(_disposed);
+
         #endregion
 
-        #region private
+        #region Helpers
 
-        private bool Disposed = false;
-        private List<Ball> BallsList = new();
-        private double TableWidth;
-        private double TableHeight;
+        private static double MassToDiameter(double mass)
+            => 10.0 + (mass - 0.5) / (2.0 - 0.5) * (20.0 - 10.0);
 
-        #endregion
-
-        #region TestingInfrastructure
-
-        [Conditional("DEBUG")]
-        internal void CheckBallsList(Action<IEnumerable<IBall>> returnBallsList)
-            => returnBallsList(BallsList);
-
-        [Conditional("DEBUG")]
-        internal void CheckNumberOfBalls(Action<int> returnNumberOfBalls)
-            => returnNumberOfBalls(BallsList.Count);
-
-        [Conditional("DEBUG")]
-        internal void CheckObjectDisposed(Action<bool> returnInstanceDisposed)
-            => returnInstanceDisposed(Disposed);
+        private static double MassToRadius(double mass)
+            => MassToDiameter(mass) / 2.0;
 
         #endregion
     }

@@ -7,46 +7,71 @@
 //  https://github.com/mpostol/TP/discussions/182
 //
 //_____________________________________________________________________________________________________________________________________
+using System;
+using System.Threading;
 
 namespace TP.ConcurrentProgramming.Data
 {
-    internal class Ball : IBall
+    internal class Ball : IBall, IDisposable
     {
-        #region ctor
+        private readonly double _tableW, _tableH;
+        private readonly CancellationTokenSource _cts = new();
+        private const int FrameTime = 20;
 
-        internal Ball(Vector initialPosition, Vector initialVelocity, double mass)
-        {
-            Position = initialPosition;
-            Velocity = initialVelocity;
-            Mass = mass;
-        }
-
-        #endregion ctor
-
-        #region IBall
+        private Vector _position;
+        private Vector _velocity;
 
         public event EventHandler<IVector>? NewPositionNotification;
-
-        public IVector Velocity { get; set; }
-
-        #endregion IBall
-
-        #region private
-
-        public Vector Position { get; private set; }
         public double Mass { get; }
-
-        private void RaiseNewPositionChangeNotification()
+        public IVector Velocity
         {
-            NewPositionNotification?.Invoke(this, Position);
+            get => new Vector(_velocity.x, _velocity.y);
+            set => _velocity = new Vector(value.x, value.y);
+        }
+
+        internal Ball(
+            Vector initialPosition,
+            Vector initialVelocity,
+            double mass,
+            double tableWidth,
+            double tableHeight)
+        {
+            _position = initialPosition;
+            _velocity = initialVelocity;
+            Mass = mass;
+            _tableW = tableWidth;
+            _tableH = tableHeight;
+
+            var thread = new Thread(RunLoop) { IsBackground = true };
+            thread.Start();
+        }
+
+        private void RunLoop()
+        {
+            try
+            {
+                while (!_cts.Token.IsCancellationRequested)
+                {
+                    Move(_velocity);
+                    Thread.Sleep(FrameTime);
+                }
+            }
+            catch (ThreadInterruptedException)
+            {
+            }
         }
 
         internal void Move(Vector delta)
         {
-            Position = new Vector(Position.x + delta.x, Position.y + delta.y);
-            RaiseNewPositionChangeNotification();
+            _position = new Vector(
+                _position.x + delta.x,
+                _position.y + delta.y);
+            NewPositionNotification?.Invoke(this, _position);
         }
 
-        #endregion private
+        public void Dispose()
+        {
+            _cts.Cancel();
+        }
     }
 }

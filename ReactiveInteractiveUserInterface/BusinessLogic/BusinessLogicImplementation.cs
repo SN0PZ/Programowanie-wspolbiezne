@@ -1,23 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using UnderneathLayerAPI = TP.ConcurrentProgramming.Data.DataAbstractAPI;
 using Data = TP.ConcurrentProgramming.Data;
-using System.Diagnostics;
+using Underneath = TP.ConcurrentProgramming.Data.DataAbstractAPI;
 
 namespace TP.ConcurrentProgramming.BusinessLogic
 {
     internal class BusinessLogicImplementation : BusinessLogicAbstractAPI
     {
-        private readonly List<BallState> _balls = new();
-        private double _tableW, _tableH;
-        private readonly UnderneathLayerAPI layerBellow;
+        private readonly object _lock = new();
+        private readonly List<BallState> _states = new();
+        private readonly Underneath _dataLayer;
         private CancellationTokenSource? _cts;
-        private bool Disposed = false;
+        private bool _disposed;
+        private double _tableW, _tableH;
 
-        // mapping masa → rozmiar
         private const double MinMass = 0.5, MaxMass = 2.0;
         private const double MinDiam = 10.0, MaxDiam = 20.0;
         private static double MassToDiameter(double m)
@@ -25,31 +25,40 @@ namespace TP.ConcurrentProgramming.BusinessLogic
         private static double MassToRadius(double m)
             => MassToDiameter(m) / 2;
 
-        // Domyślny konstruktor korzystający z GetDataLayer()
-        public BusinessLogicImplementation()
-            : this(UnderneathLayerAPI.GetDataLayer())
-        { }
-
-        // Konstruktor przyjmujący warstwę danych
-        internal BusinessLogicImplementation(UnderneathLayerAPI underneathLayer)
-        {
-            layerBellow = underneathLayer;
-        }
-
-        private class RawVector : Data.IVector
+        private struct RawVector : Data.IVector
         {
             public double x { get; }
             public double y { get; }
             public RawVector(double x, double y) => (this.x, this.y) = (x, y);
         }
 
-        public override void Start(int numberOfBalls, double tableWidth, double tableHeight, Action<IPosition, IBall> upperLayerHandler)
+        public BusinessLogicImplementation()
+            : this(Underneath.GetDataLayer())
+        { }
+
+        internal BusinessLogicImplementation(Underneath dataLayer)
+            => _dataLayer = dataLayer ?? throw new ArgumentNullException(nameof(dataLayer));
+
+        public override void Start(
+            int numberOfBalls,
+            double tableWidth,
+            double tableHeight,
+            Action<IPosition, IBall> upperLayerHandler)
         {
-            if (Disposed) throw new ObjectDisposedException(nameof(BusinessLogicImplementation));
+            if (_disposed) throw new ObjectDisposedException(nameof(BusinessLogicImplementation));
+
             _tableW = tableWidth;
             _tableH = tableHeight;
 
-            layerBellow.Start(numberOfBalls, tableWidth, tableHeight,
+            lock (_lock)
+            {
+                _states.Clear();
+            }
+
+            _dataLayer.Start(
+                numberOfBalls,
+                tableWidth,
+                tableHeight,
                 (vec, dataBall) =>
                 {
                     double r = MassToRadius(dataBall.Mass);
@@ -57,15 +66,19 @@ namespace TP.ConcurrentProgramming.BusinessLogic
                         dataBall,
                         new Vector(vec.x, vec.y),
                         new Vector(dataBall.Velocity.x, dataBall.Velocity.y),
-                        r
-                    );
+                        r);
+
                     dataBall.NewPositionNotification += (_, v)
                         => state.Position = new Vector(v.x, v.y);
-                    lock (_balls) { _balls.Add(state); }
+
+                    lock (_lock)
+                    {
+                        _states.Add(state);
+                    }
+
                     upperLayerHandler(
                         new Position(state.Position.x, state.Position.y),
-                        new Ball(dataBall)
-                    );
+                        new Ball(dataBall));
                 });
 
             _cts = new CancellationTokenSource();
@@ -78,8 +91,8 @@ namespace TP.ConcurrentProgramming.BusinessLogic
             {
                 while (!token.IsCancellationRequested)
                 {
-                    DoStep();
-                    await Task.Delay(5, token); // 5 ms delay
+                    Step();
+                    await Task.Delay(5, token);
                 }
             }
             catch (OperationCanceledException)
@@ -87,69 +100,100 @@ namespace TP.ConcurrentProgramming.BusinessLogic
             }
         }
 
-        private void DoStep()
+        private void Step()
         {
-            lock (_balls)
+            BallState[] snapshot;
+            Vector[] oldPositions;
+
+            lock (_lock)
             {
-                var oldPos = _balls.Select(s => s.Position).ToArray();
-                PhysicsEngine.Step(_balls, _tableW, _tableH);
-                for (int i = 0; i < _balls.Count; i++)
+                snapshot = _states.ToArray();
+                oldPositions = snapshot.Select(s => s.Position).ToArray();
+            }
+
+            if (snapshot.Length == 0)
+                return;
+
+            PhysicsEngine.Step(snapshot.ToList(), _tableW, _tableH);
+
+            var deltas = new RawVector[snapshot.Length];
+            var newVels = new RawVector[snapshot.Length];
+            for (int i = 0; i < snapshot.Length; i++)
+            {
+                var st = snapshot[i];
+                var dp = st.Position - oldPositions[i];
+                deltas[i] = new RawVector(dp.x, dp.y);
+                newVels[i] = new RawVector(st.Velocity.x, st.Velocity.y);
+            }
+
+            lock (_lock)
+            {
+                for (int i = 0; i < snapshot.Length; i++)
                 {
-                    var st = _balls[i];
-                    var delta = st.Position - oldPos[i];
-                    layerBellow.MoveBall(st.Underlying, new RawVector(delta.x, delta.y));
+                    var real = _states[i];
+                    real.Position = snapshot[i].Position;
+                    real.Velocity = snapshot[i].Velocity;
                 }
+            }
+
+            for (int i = 0; i < snapshot.Length; i++)
+            {
+                var st = snapshot[i];
+                _dataLayer.MoveBall(st.Underlying, deltas[i]);
+                st.Underlying.Velocity = newVels[i];
             }
         }
 
         public override void AddBall(Action<IPosition, IBall> upperLayerHandler)
         {
-            if (Disposed) throw new ObjectDisposedException(nameof(BusinessLogicImplementation));
+            if (_disposed) throw new ObjectDisposedException(nameof(BusinessLogicImplementation));
 
-            layerBellow.AddBall((vec, dataBall) =>
+            _dataLayer.AddBall((vec, dataBall) =>
             {
                 double r = MassToRadius(dataBall.Mass);
                 var state = new BallState(
                     dataBall,
                     new Vector(vec.x, vec.y),
                     new Vector(dataBall.Velocity.x, dataBall.Velocity.y),
-                    r
-                );
+                    r);
+
                 dataBall.NewPositionNotification += (_, v)
                     => state.Position = new Vector(v.x, v.y);
-                lock (_balls) { _balls.Add(state); }
+
+                lock (_lock)
+                {
+                    _states.Add(state);
+                }
+
                 upperLayerHandler(
                     new Position(state.Position.x, state.Position.y),
-                    new Ball(dataBall)
-                );
+                    new Ball(dataBall));
             });
         }
 
         public override void RemoveLastBall()
         {
-            if (Disposed) throw new ObjectDisposedException(nameof(BusinessLogicImplementation));
+            if (_disposed) throw new ObjectDisposedException(nameof(BusinessLogicImplementation));
 
-            lock (_balls)
+            lock (_lock)
             {
-                if (_balls.Count > 0)
-                    _balls.RemoveAt(_balls.Count - 1);
+                if (_states.Count > 0)
+                    _states.RemoveAt(_states.Count - 1);
             }
-            layerBellow.RemoveLastBall();
+
+            _dataLayer.RemoveLastBall();
         }
 
         public override void Dispose()
         {
-            if (Disposed)
-                throw new ObjectDisposedException(nameof(BusinessLogicImplementation));
+            if (_disposed) throw new ObjectDisposedException(nameof(BusinessLogicImplementation));
+
             _cts?.Cancel();
-            layerBellow.Dispose();
-            Disposed = true;
+            _dataLayer.Dispose();
+            _disposed = true;
         }
 
         [Conditional("DEBUG")]
-        internal void CheckObjectDisposed(Action<bool> returnInstanceDisposed)
-        {
-            returnInstanceDisposed(Disposed);
-        }
+        internal void CheckObjectDisposed(Action<bool> cb) => cb(_disposed);
     }
 }
