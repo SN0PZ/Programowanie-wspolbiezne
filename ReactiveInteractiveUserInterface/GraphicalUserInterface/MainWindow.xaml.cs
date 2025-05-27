@@ -14,40 +14,33 @@ using TP.ConcurrentProgramming.Presentation.ViewModel;
 
 namespace TP.ConcurrentProgramming.PresentationView
 {
-  /// <summary>
-  /// View implementation
-  /// </summary>
-  public partial class MainWindow : Window
-  {
-    public MainWindow()
-    {
-      Random random = new Random();
-      InitializeComponent();
-      MainWindowViewModel viewModel = (MainWindowViewModel)DataContext;
-      double screenWidth = SystemParameters.PrimaryScreenWidth;
-      double screenHeight = SystemParameters.PrimaryScreenHeight;
-      //viewModel.Start(random.Next(5, 10));
-    }
-
     /// <summary>
-    /// Raises the <seealso cref="System.Windows.Window.Closed"/> event.
+    /// View implementation
     /// </summary>
-    /// <param name="e">An <see cref="EventArgs"/> that contains the event data.</param>
-    protected override void OnClosed(EventArgs e)
+    public partial class MainWindow : Window
     {
-      if (DataContext is MainWindowViewModel viewModel)
-        viewModel.Dispose();
-      base.OnClosed(e);
-    }
+        public MainWindow()
+        {
+            InitializeComponent();
+        }
 
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
+            if (sender is Button btn)
+                btn.IsEnabled = false;
+
             if (DataContext is MainWindowViewModel viewModel)
             {
-                double width = 395; 
-                double height = 415; 
+                const double width = 395;
+                const double height = 415;
                 viewModel.StartSimulationWithSize(width, height);
             }
+        }
+        protected override void OnClosed(EventArgs e)
+        {
+            if (DataContext is MainWindowViewModel vm)
+                vm.Dispose();
+            base.OnClosed(e);
         }
     }
 }

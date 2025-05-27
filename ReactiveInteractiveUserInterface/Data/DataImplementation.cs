@@ -29,11 +29,11 @@ namespace TP.ConcurrentProgramming.Data
             if (_disposed) throw new ObjectDisposedException(nameof(DataImplementation));
             if (creationHandler == null) throw new ArgumentNullException(nameof(creationHandler));
 
-            _tableW = tableWidth;
-            _tableH = tableHeight;
-
             foreach (var b in _balls) b.Dispose();
             _balls.Clear();
+
+            _tableW = tableWidth;
+            _tableH = tableHeight;
 
             for (int i = 0; i < numberOfBalls; i++)
                 CreateAndRegisterBall(creationHandler);
@@ -43,14 +43,13 @@ namespace TP.ConcurrentProgramming.Data
         {
             if (_disposed) throw new ObjectDisposedException(nameof(DataImplementation));
             if (creationHandler == null) throw new ArgumentNullException(nameof(creationHandler));
-
             CreateAndRegisterBall(creationHandler);
         }
 
         private void CreateAndRegisterBall(Action<IVector, IBall> creationHandler)
         {
             double mass = 0.5 + _rnd.NextDouble() * 1.5;
-            double radius = MassToRadius(mass);
+            double radius = (10.0 + (mass - 0.5) / 1.5 * 10.0) / 2.0;
 
             double x = _rnd.NextDouble() * (_tableW - 2 * radius) + radius;
             double y = _rnd.NextDouble() * (_tableH - 2 * radius) + radius;
@@ -90,29 +89,14 @@ namespace TP.ConcurrentProgramming.Data
             _disposed = true;
         }
 
-        #region TestingInstrumentation (DEBUG)
+        #region DEBUG TestingInstrumentation
 
         [Conditional("DEBUG")]
-        internal void CheckBallsList(Action<IEnumerable<IBall>> cb)
-            => cb(_balls);
-
+        internal void CheckBallsList(Action<IEnumerable<IBall>> cb) => cb(_balls);
         [Conditional("DEBUG")]
-        internal void CheckNumberOfBalls(Action<int> cb)
-            => cb(_balls.Count);
-
+        internal void CheckNumberOfBalls(Action<int> cb) => cb(_balls.Count);
         [Conditional("DEBUG")]
-        internal void CheckObjectDisposed(Action<bool> cb)
-            => cb(_disposed);
-
-        #endregion
-
-        #region Helpers
-
-        private static double MassToDiameter(double mass)
-            => 10.0 + (mass - 0.5) / (2.0 - 0.5) * (20.0 - 10.0);
-
-        private static double MassToRadius(double mass)
-            => MassToDiameter(mass) / 2.0;
+        internal void CheckObjectDisposed(Action<bool> cb) => cb(_disposed);
 
         #endregion
     }
