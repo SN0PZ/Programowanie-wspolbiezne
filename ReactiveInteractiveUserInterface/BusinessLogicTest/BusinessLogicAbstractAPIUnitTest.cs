@@ -8,27 +8,32 @@
 //
 //_____________________________________________________________________________________________________________________________________
 
+using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TP.ConcurrentProgramming.BusinessLogic;
 
 namespace TP.ConcurrentProgramming.BusinessLogic.Test
 {
-  [TestClass]
-  public class BusinessLogicAbstractAPIUnitTest
-  {
-    [TestMethod]
-    public void BusinessLogicConstructorTestMethod()
+    [TestClass]
+    public class BusinessLogicAbstractAPIUnitTest
     {
-      BusinessLogicAbstractAPI instance1 = BusinessLogicAbstractAPI.GetBusinessLogicLayer();
-      BusinessLogicAbstractAPI instance2 = BusinessLogicAbstractAPI.GetBusinessLogicLayer();
-      Assert.AreSame(instance1, instance2);
-      instance1.Dispose();
-      Assert.ThrowsException<ObjectDisposedException>(() => instance2.Dispose());
-    }
+        [TestMethod]
+        public void BusinessLogicConstructorTestMethod()
+        {
+            BusinessLogicAbstractAPI instance1 = BusinessLogicAbstractAPI.GetBusinessLogicLayer();
+            BusinessLogicAbstractAPI instance2 = BusinessLogicAbstractAPI.GetBusinessLogicLayer();
+            Assert.AreSame(instance1, instance2);
 
-    [TestMethod]
-    public void GetDimensionsTestMethod()
-    {
-      Assert.AreEqual<Dimensions>(new(10.0, 10.0, 10.0), BusinessLogicAbstractAPI.GetDimensions);
+            instance1.Dispose();
+            Assert.ThrowsException<ObjectDisposedException>(() => instance2.Dispose());
+        }
+
+        [TestMethod]
+        public void GetDimensionsTestMethod()
+        {
+            var expected = new Dimensions(10.0, 10.0, 10.0);
+            var actual = BusinessLogicAbstractAPI.GetDimensions;
+            Assert.AreEqual(expected, actual);
+        }
     }
-  }
 }

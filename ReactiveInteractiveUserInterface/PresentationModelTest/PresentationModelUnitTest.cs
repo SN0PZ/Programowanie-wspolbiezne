@@ -8,6 +8,9 @@
 ////
 ////_____________________________________________________________________________________________________________________________________
 
+//using Microsoft.VisualStudio.TestTools.UnitTesting;
+//using System;
+//using TP.ConcurrentProgramming.Presentation.Model;
 //using TP.ConcurrentProgramming.BusinessLogic;
 
 //namespace TP.ConcurrentProgramming.Presentation.Model.Test
@@ -15,67 +18,56 @@
 //    [TestClass]
 //    public class PresentationModelUnitTest
 //    {
-//        [TestMethod]
-//        public void DisposeTestMethod()
+//        private class UnderlyingLogicFixture : BusinessLogicAbstractAPI
 //        {
-//            UnderneathLayerFixture underneathLayerFixture = new UnderneathLayerFixture();
-//            ModelImplementation? newInstance = null;
-//            using (newInstance = new(underneathLayerFixture))
-//            {
-//                newInstance.CheckObjectDisposed(x => Assert.IsFalse(x));
-//                newInstance.CheckUnderneathLayerAPI(x => Assert.AreSame(underneathLayerFixture, x));
-//                newInstance.CheckBallChangedEvent(x => Assert.IsTrue(x));
-//                Assert.IsFalse(underneathLayerFixture.Disposed);
-//            }
-//            newInstance.CheckObjectDisposed(x => Assert.IsTrue(x));
-//            newInstance.CheckUnderneathLayerAPI(x => Assert.AreSame(underneathLayerFixture, x));
-//            Assert.IsTrue(underneathLayerFixture.Disposed);
-//            Assert.ThrowsException<ObjectDisposedException>(() => newInstance.Dispose());
-//        }
-
-//        [TestMethod]
-//        public void StartTestMethod()
-//        {
-//            UnderneathLayerFixture underneathLayerFixture = new UnderneathLayerFixture();
-//            using (ModelImplementation newInstance = new(underneathLayerFixture))
-//            {
-//                newInstance.CheckBallChangedEvent(x => Assert.IsTrue(x));
-//                IDisposable subscription = newInstance.Subscribe(x => { });
-//                newInstance.CheckBallChangedEvent(x => Assert.IsFalse(x));
-//                newInstance.Start(10);
-//                Assert.AreEqual<int>(10, underneathLayerFixture.NumberOfBalls);
-//                subscription.Dispose();
-//                newInstance.CheckBallChangedEvent(x => Assert.IsTrue(x));
-//            }
-//        }
-
-//        #region testing instrumentation
-
-//        private class UnderneathLayerFixture : BusinessLogicAbstractAPI
-//        {
-//            #region testing instrumentation
-
-//            internal bool Disposed = false;
-//            internal int NumberOfBalls = 0;
-
-//            #endregion testing instrumentation
-
-//            #region BusinessLogicAbstractAPI
-
+//            internal bool DisposedCalled;
+//            internal int StartCalledWith;
 //            public override void Dispose()
 //            {
-//                Disposed = true;
+//                DisposedCalled = true;
 //            }
-
-//            public override void Start(int numberOfBalls, Action<IPosition, BusinessLogic.IBall> upperLayerHandler)
+//            public override void Start(int numberOfBalls, double tableWidth, double tableHeight, Action<IPosition, IBall> handler)
 //            {
-//                NumberOfBalls = numberOfBalls;
-//                Assert.IsNotNull(upperLayerHandler);
+//                StartCalledWith = numberOfBalls;
 //            }
-
-//            #endregion BusinessLogicAbstractAPI
+//            public override void AddBall(Action<IPosition, IBall> handler) => throw new NotImplementedException();
+//            public override void RemoveLastBall() => throw new NotImplementedException();
 //        }
 
-//        #endregion testing instrumentation
+//        [TestMethod]
+//        public void Dispose_ShouldDisposeUnderlyingLogic_AndPreventFurtherStart()
+//        {
+//            // Arrange
+//            var fixture = new UnderlyingLogicFixture();
+//            var model = new PresentationModel(fixture);
+
+//            // Act
+//            model.Dispose();
+
+//            // Assert
+//            Assert.IsTrue(fixture.DisposedCalled, "Dispose on model should call Dispose on logic layer");
+//            Assert.ThrowsException<ObjectDisposedException>(() => model.Start(1, 100, 100));
+//        }
+
+//        [TestMethod]
+//        public void Start_ShouldCallUnderlyingLogicStart_AndForwardBallsToSubscribers()
+//        {
+//            // Arrange
+//            var fixture = new UnderlyingLogicFixture();
+//            var model = new PresentationModel(fixture);
+//            int observedCount = 0;
+
+//            // Subscribe to new balls
+//            using var subscription = model.Subscribe(ball => observedCount++);
+
+//            // Act
+//            model.Start(5, 200, 200);
+
+//            // Assert
+//            Assert.AreEqual(5, fixture.StartCalledWith, "Model.Start should forward the ball count to logic layer");
+//            // We didn't hook up the BallChanged event in the fixture, so observedCount remains 0.
+//            // If you want to test actual BallCreatedHandler invocation, you can extend the fixture to raise it.
+//            Assert.AreEqual(0, observedCount, "By default the fixture does not invoke callbacks");
+//        }
 //    }
 //}
