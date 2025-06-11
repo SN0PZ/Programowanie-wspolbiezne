@@ -25,7 +25,6 @@ namespace TP.ConcurrentProgramming.BusinessLogic
         private System.Timers.Timer? _logTimer;
         private FileLogger? _logger;
 
-        // Do obliczania czasu między kolejnymi „Elapsed”
         private DateTime _lastTickTime;
 
         private const double MinMass = 0.5, MaxMass = 2.0;
@@ -71,7 +70,6 @@ namespace TP.ConcurrentProgramming.BusinessLogic
             lock (_lock)
                 _states.Clear();
 
-            // Inicjalizacja warstwy danych
             _dataLayer.SetTickEvent(_tickEvent);
             _dataLayer.Start(
                 numberOfBalls,
@@ -94,30 +92,25 @@ namespace TP.ConcurrentProgramming.BusinessLogic
                         new Ball(dataBall));
                 });
 
-            // Logger co sekundę
             _logger = new FileLogger("simulation_log.txt");
             _logTimer = new System.Timers.Timer(1000);
             _logTimer.Elapsed += OnLogTimerElapsed;
             _logTimer.AutoReset = true;
             _logTimer.Start();
 
-            // Timer symulacyjny ~60 FPS
             _lastTickTime = DateTime.Now;
             _tickerTimer = new System.Timers.Timer(16.0);
             _tickerTimer.Elapsed += OnTickerTimerElapsed;
             _tickerTimer.AutoReset = true;
             _tickerTimer.Start();
 
-            // (opcjonalnie) dodatkowa pętla Task.Run – już niepotrzebna, bo używamy Timera
         }
 
         private void OnTickerTimerElapsed(object? sender, ElapsedEventArgs e)
         {
-            // Oblicz upływ czasu od ostatniego tiku
             double deltaTime = (e.SignalTime - _lastTickTime).TotalSeconds;
             _lastTickTime = e.SignalTime;
 
-            // Wywołujemy naszą metodę z deltaTime
             Step(deltaTime);
         }
 
@@ -130,10 +123,8 @@ namespace TP.ConcurrentProgramming.BusinessLogic
             if (snapshot.Length < 2)
                 return;
 
-            // 1) fizyka: przekazujemy deltaTime do silnika
             PhysicsEngine.Step(snapshot.ToList(), _tableW, _tableH, deltaTime);
 
-            // 2) synchronizacja z warstwą danych: ruszamy kulę o v * dt
             foreach (var st in snapshot)
             {
                 var moveVec = new RawVector(st.Velocity.x * deltaTime, st.Velocity.y * deltaTime);
