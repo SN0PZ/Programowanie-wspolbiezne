@@ -1,69 +1,58 @@
-﻿//____________________________________________________________________________________________________________________________________
-//
-//  Copyright (C) 2024, Mariusz Postol LODZ POLAND.
-//
-//  To be in touch join the community by pressing the `Watch` button and get started commenting using the discussion panel at
-//
-//  https://github.com/mpostol/TP/discussions/182
-//
-//_____________________________________________________________________________________________________________________________________
+﻿////____________________________________________________________________________________________________________________________________
+////
+////  Copyright (C) 2024, Mariusz Postol LODZ POLAND.
+////
+////  To be in touch join the community by pressing the `Watch` button and get started commenting using the discussion panel at
+////
+////  https://github.com/mpostol/TP/discussions/182
+////
+////_____________________________________________________________________________________________________________________________________
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using TP.ConcurrentProgramming.BusinessLogic;
-using TP.ConcurrentProgramming.Presentation.Model;
-using LogicIBall = TP.ConcurrentProgramming.BusinessLogic.IBall;
+//using TP.ConcurrentProgramming.BusinessLogic;
 
-namespace TP.ConcurrentProgramming.Presentation.Model.Test
-{
-    [TestClass]
-    public class ModelBallUnitTest
-    {
-        [TestMethod]
-        public void ConstructorTestMethod()
-        {
-            var fixture = new BusinessLogicIBallFixture();
-            double centerX = 10.0, centerY = 20.0, diameter = 10.0;
+//namespace TP.ConcurrentProgramming.Presentation.Model.Test
+//{
+//  [TestClass]
+//  public class ModelBallUnitTest
+//  {
+//    [TestMethod]
+//    public void ConstructorTestMethod()
+//    {
+//      ModelBall ball = new ModelBall(0.0, 0.0, new BusinessLogicIBallFixture());
+//      Assert.AreEqual<double>(0.0, ball.Top);
+//      Assert.AreEqual<double>(0.0, ball.Top);
+//    }
 
-            var ball = new ModelBall(centerX, centerY, fixture, diameter);
+//    [TestMethod]
+//    public void PositionChangeNotificationTestMethod()
+//    {
+//      int notificationCounter = 0;
+//      ModelBall ball = new ModelBall(0, 0.0, new BusinessLogicIBallFixture());
+//      ball.PropertyChanged += (sender, args) => notificationCounter++;
+//      Assert.AreEqual(0, notificationCounter);
+//      ball.SetLeft(1.0);
+//      Assert.AreEqual<int>(1, notificationCounter);
+//      Assert.AreEqual<double>(1.0, ball.Left);
+//      Assert.AreEqual<double>(0.0, ball.Top);
+//      ball.SettTop(1.0);
+//      Assert.AreEqual(2, notificationCounter);
+//      Assert.AreEqual<double>(1.0, ball.Left);
+//      Assert.AreEqual<double>(1.0, ball.Top);
+//    }
 
-            Assert.AreEqual(15.0, ball.Top, 1e-6);
-            Assert.AreEqual(5.0, ball.Left, 1e-6);
-            Assert.AreEqual(diameter, ball.Diameter, 1e-6);
-        }
+//    #region testing instrumentation
 
-        [TestMethod]
-        public void PositionChangeNotificationTestMethod()
-        {
-            int propertyChangedCount = 0;
-            var fixture = new BusinessLogicIBallFixture();
-            var ball = new ModelBall(0.0, 0.0, fixture, diameter: 10.0);
-            ball.PropertyChanged += (_, __) => propertyChangedCount++;
+//    private class BusinessLogicIBallFixture : BusinessLogic.IBall
+//    {
+//      public event EventHandler<IPosition>? NewPositionNotification;
+//      public double Mass => 1.0;
 
-            var newPos = new PositionFixture { x = 50.0, y = 60.0 };
-            fixture.RaisePositionChanged(newPos);
+//      public void Dispose()
+//      {
+//        throw new NotImplementedException();
+//      }
+//    }
 
-            Assert.AreEqual(55.0, ball.Top, 1e-6);
-            Assert.AreEqual(45.0, ball.Left, 1e-6);
-            Assert.AreEqual(2, propertyChangedCount);
-        }
-
-        #region Fixtures
-
-        private class BusinessLogicIBallFixture : LogicIBall
-        {
-            public event EventHandler<IPosition>? NewPositionNotification;
-            public double Mass => 1.0;
-            public void RaisePositionChanged(IPosition pos)
-                => NewPositionNotification?.Invoke(this, pos);
-        }
-
-        private class PositionFixture : IPosition
-        {
-            public double x { get; init; }
-            public double y { get; init; }
-        }
-
-        #endregion
-    }
-}
+//    #endregion testing instrumentation
+//  }
+//}

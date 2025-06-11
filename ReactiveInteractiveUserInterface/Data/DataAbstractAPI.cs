@@ -1,4 +1,6 @@
-﻿//____________________________________________________________________________________________________________________________________
+﻿// Plik: Data/DataAbstractAPI.cs
+
+//____________________________________________________________________________________________________________________________________
 //
 //  Copyright (C) 2024, Mariusz Postol LODZ POLAND.
 //
@@ -7,6 +9,8 @@
 //  https://github.com/mpostol/TP/discussions/182
 //
 //_____________________________________________________________________________________________________________________________________
+using System;
+using System.Threading; 
 
 namespace TP.ConcurrentProgramming.Data
 {
@@ -29,6 +33,9 @@ namespace TP.ConcurrentProgramming.Data
         public abstract void MoveBall(IBall ball, IVector delta);
 
 
+        public abstract void SetTickEvent(ManualResetEvent tickEvent);
+
+
         #endregion public API
 
         #region IDisposable
@@ -45,21 +52,13 @@ namespace TP.ConcurrentProgramming.Data
     }
     public interface IVector
     {
-        /// <summary>
-        /// The X component of the vector.
-        /// </summary>
         double x { get; }
-
-        /// <summary>
-        /// The y component of the vector.
-        /// </summary>
         double y { get; }
     }
 
     public interface IBall
     {
         event EventHandler<IVector> NewPositionNotification;
-
         IVector Velocity { get; set; }
         double Mass { get; }
     }

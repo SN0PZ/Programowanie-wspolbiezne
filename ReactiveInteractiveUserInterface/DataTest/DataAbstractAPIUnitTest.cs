@@ -8,26 +8,19 @@
 //
 //_____________________________________________________________________________________________________________________________________
 
-using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using TP.ConcurrentProgramming.Data;
-
 namespace TP.ConcurrentProgramming.Data.Test
 {
-    [TestClass]
-    public class DataAbstractAPIUnitTest
+  [TestClass]
+  public class DataAbstractAPIUnitTest
+  {
+    [TestMethod]
+    public void ConstructorTestTestMethod()
     {
-        [TestMethod]
-        public void GetDataLayer_IsSingletonAndDisposeThrowsOnSecondCall()
-        {
-            var instance1 = DataAbstractAPI.GetDataLayer();
-            var instance2 = DataAbstractAPI.GetDataLayer();
-
-            Assert.AreSame(instance1, instance2);
-
-            instance1.Dispose();
-
-            Assert.ThrowsException<ObjectDisposedException>(() => instance2.Dispose());
-        }
+      DataAbstractAPI instance1 = DataAbstractAPI.GetDataLayer();
+      DataAbstractAPI instance2 = DataAbstractAPI.GetDataLayer();
+      Assert.AreSame<DataAbstractAPI>(instance1, instance2);
+      instance1.Dispose();
+      Assert.ThrowsException<ObjectDisposedException>(() => instance2.Dispose());
     }
+  }
 }

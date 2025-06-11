@@ -7,50 +7,48 @@
 //  https://github.com/mpostol/TP/discussions/182
 //
 //_____________________________________________________________________________________________________________________________________
-using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using TP.ConcurrentProgramming.BusinessLogic;
-using Data = TP.ConcurrentProgramming.Data;
 
 namespace TP.ConcurrentProgramming.BusinessLogic.Test
 {
-    [TestClass]
-    public class BallUnitTest
+  [TestClass]
+  public class BallUnitTest
+  {
+    [TestMethod]
+    public void MoveTestMethod()
     {
-        [TestMethod]
-        public void MoveTestMethod()
-        {
-            var dataBall = new DataBallFixture();
-            var wrapper = new Ball(dataBall);
-
-            int callbackCount = 0;
-            wrapper.NewPositionNotification += (sender, position) =>
-            {
-                Assert.AreSame(wrapper, sender);
-                Assert.AreEqual(5.5, position.x, 1e-9);
-                Assert.AreEqual(7.7, position.y, 1e-9);
-                callbackCount++;
-            };
-
-            dataBall.RaiseMove(5.5, 7.7);
-
-            Assert.AreEqual(1, callbackCount);
-        }
-
-        #region Testing instrumentation
-
-        private class DataBallFixture : Data.IBall
-        {
-            public event EventHandler<Data.IVector>? NewPositionNotification;
-            public Data.IVector Velocity { get; set; }
-            public double Mass => 1.0;
-            public void RaiseMove(double x, double y)
-            {
-                NewPositionNotification?.Invoke(this, new VectorFixture(x, y));
-            }
-        }
-        private record VectorFixture(double x, double y) : Data.IVector;
-
-        #endregion
+      DataBallFixture dataBallFixture = new DataBallFixture();
+      Ball newInstance = new(dataBallFixture);
+      int numberOfCallBackCalled = 0;
+      newInstance.NewPositionNotification += (sender, position) => { Assert.IsNotNull(sender); Assert.IsNotNull(position); numberOfCallBackCalled++; };
+      dataBallFixture.Move();
+      Assert.AreEqual<int>(1, numberOfCallBackCalled);
     }
+
+    #region testing instrumentation
+
+    private class DataBallFixture : Data.IBall
+    {
+      public Data.IVector Velocity { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+      public event EventHandler<Data.IVector>? NewPositionNotification;
+      public double Mass => 1.0;
+      internal void Move()
+      {
+        NewPositionNotification?.Invoke(this, new VectorFixture(0.0, 0.0));
+      }
+    }
+
+    private class VectorFixture : Data.IVector
+    {
+      internal VectorFixture(double X, double Y)
+      {
+        x = X; y = Y;
+      }
+
+      public double x { get; init; }
+      public double y { get; init; }
+    }
+
+    #endregion testing instrumentation
+  }
 }

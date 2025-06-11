@@ -1,4 +1,7 @@
-﻿namespace TP.ConcurrentProgramming.BusinessLogic
+﻿using System;
+using System.Collections.Generic;
+
+namespace TP.ConcurrentProgramming.BusinessLogic
 {
     internal struct Vector
     {
@@ -41,15 +44,16 @@
     {
         const double MIN_BOUNCE_SPEED = 0.1;
 
+        // Updated signature to include deltaTime
         public static void Step(
             List<BallState> balls,
             double tableWidth,
-            double tableHeight
-        )
+            double tableHeight,
+            double deltaTime)
         {
             int n = balls.Count;
 
-            // 1) Kolizje kula–kula (separacja + impuls)
+            // Handle collisions
             for (int i = 0; i < n; i++)
             {
                 for (int j = i + 1; j < n; j++)
@@ -89,10 +93,13 @@
                 }
             }
 
-            // 2) Ruch + odbicia od ścian (overshoot-reflect + minimal bounce)
+            // Move each ball by velocity * deltaTime, and handle wall bounces
             foreach (var s in balls)
             {
-                var newPos = s.Position + s.Velocity;
+                // Calculate displacement
+                var displacement = s.Velocity * deltaTime;
+                var newPos = s.Position + displacement;
+
                 double vx = s.Velocity.x;
                 double vy = s.Velocity.y;
 
@@ -101,6 +108,7 @@
                 double minY = s.Radius;
                 double maxY = tableHeight - s.Radius;
 
+                // X-axis bounce
                 if (newPos.x < minX)
                 {
                     double over = minX - newPos.x;
@@ -118,6 +126,7 @@
                         vx = Math.Sign(vx) * MIN_BOUNCE_SPEED;
                 }
 
+                // Y-axis bounce
                 if (newPos.y < minY)
                 {
                     double over = minY - newPos.y;
@@ -135,6 +144,7 @@
                         vy = Math.Sign(vy) * MIN_BOUNCE_SPEED;
                 }
 
+                // Apply new position and velocity
                 s.Position = newPos;
                 s.Velocity = new Vector(vx, vy);
             }

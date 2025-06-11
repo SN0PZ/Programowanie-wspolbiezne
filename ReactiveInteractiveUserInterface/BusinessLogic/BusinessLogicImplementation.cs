@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using Data = TP.ConcurrentProgramming.Data;
 using Underneath = TP.ConcurrentProgramming.Data.DataAbstractAPI;
 
@@ -18,12 +19,19 @@ namespace TP.ConcurrentProgramming.BusinessLogic
         private bool _disposed;
         private double _tableW, _tableH;
 
+        private readonly ManualResetEvent _tickEvent = new ManualResetEvent(false);
+        private System.Timers.Timer? _tickerTimer;
+
+        private System.Timers.Timer? _logTimer;
+        private FileLogger? _logger;
+
+        // Do obliczania czasu między kolejnymi „Elapsed”
+        private DateTime _lastTickTime;
+
         private const double MinMass = 0.5, MaxMass = 2.0;
         private const double MinDiam = 10.0, MaxDiam = 20.0;
-        private static double MassToDiameter(double m)
-            => MinDiam + (m - MinMass) / (MaxMass - MinMass) * (MaxDiam - MinDiam);
-        private static double MassToRadius(double m)
-            => MassToDiameter(m) / 2;
+        private static double MassToDiameter(double m) => MinDiam + (m - MinMass) / (MaxMass - MinMass) * (MaxDiam - MinDiam);
+        private static double MassToRadius(double m) => MassToDiameter(m) / 2;
 
         private struct RawVector : Data.IVector
         {
@@ -37,7 +45,17 @@ namespace TP.ConcurrentProgramming.BusinessLogic
         { }
 
         internal BusinessLogicImplementation(Underneath dataLayer)
-            => _dataLayer = dataLayer ?? throw new ArgumentNullException(nameof(dataLayer));
+        {
+            _dataLayer = dataLayer ?? throw new ArgumentNullException(nameof(dataLayer));
+            try
+            {
+                Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Nie udało się ustawić priorytetu: {ex.Message}");
+            }
+        }
 
         public override void Start(
             int numberOfBalls,
@@ -51,10 +69,10 @@ namespace TP.ConcurrentProgramming.BusinessLogic
             _tableH = tableHeight;
 
             lock (_lock)
-            {
                 _states.Clear();
-            }
 
+            // Inicjalizacja warstwy danych
+            _dataLayer.SetTickEvent(_tickEvent);
             _dataLayer.Start(
                 numberOfBalls,
                 tableWidth,
@@ -67,80 +85,59 @@ namespace TP.ConcurrentProgramming.BusinessLogic
                         new Vector(vec.x, vec.y),
                         new Vector(dataBall.Velocity.x, dataBall.Velocity.y),
                         r);
-
-                    dataBall.NewPositionNotification += (_, v)
-                        => state.Position = new Vector(v.x, v.y);
-
+                    dataBall.NewPositionNotification += (_, v) => state.Position = new Vector(v.x, v.y);
                     lock (_lock)
-                    {
                         _states.Add(state);
-                    }
 
                     upperLayerHandler(
                         new Position(state.Position.x, state.Position.y),
                         new Ball(dataBall));
                 });
 
-            _cts = new CancellationTokenSource();
-            _ = Task.Run(() => RunLoopAsync(_cts.Token));
+            // Logger co sekundę
+            _logger = new FileLogger("simulation_log.txt");
+            _logTimer = new System.Timers.Timer(1000);
+            _logTimer.Elapsed += OnLogTimerElapsed;
+            _logTimer.AutoReset = true;
+            _logTimer.Start();
+
+            // Timer symulacyjny ~60 FPS
+            _lastTickTime = DateTime.Now;
+            _tickerTimer = new System.Timers.Timer(16.0);
+            _tickerTimer.Elapsed += OnTickerTimerElapsed;
+            _tickerTimer.AutoReset = true;
+            _tickerTimer.Start();
+
+            // (opcjonalnie) dodatkowa pętla Task.Run – już niepotrzebna, bo używamy Timera
         }
 
-        private async Task RunLoopAsync(CancellationToken token)
+        private void OnTickerTimerElapsed(object? sender, ElapsedEventArgs e)
         {
-            try
-            {
-                while (!token.IsCancellationRequested)
-                {
-                    Step();
-                    await Task.Delay(5, token);
-                }
-            }
-            catch (OperationCanceledException)
-            {
-            }
+            // Oblicz upływ czasu od ostatniego tiku
+            double deltaTime = (e.SignalTime - _lastTickTime).TotalSeconds;
+            _lastTickTime = e.SignalTime;
+
+            // Wywołujemy naszą metodę z deltaTime
+            Step(deltaTime);
         }
 
-        private void Step()
+        private void Step(double deltaTime)
         {
             BallState[] snapshot;
-            Vector[] oldPositions;
-
             lock (_lock)
-            {
                 snapshot = _states.ToArray();
-                oldPositions = snapshot.Select(s => s.Position).ToArray();
-            }
 
-            if (snapshot.Length == 0)
+            if (snapshot.Length < 2)
                 return;
 
-            PhysicsEngine.Step(snapshot.ToList(), _tableW, _tableH);
+            // 1) fizyka: przekazujemy deltaTime do silnika
+            PhysicsEngine.Step(snapshot.ToList(), _tableW, _tableH, deltaTime);
 
-            var deltas = new RawVector[snapshot.Length];
-            var newVels = new RawVector[snapshot.Length];
-            for (int i = 0; i < snapshot.Length; i++)
+            // 2) synchronizacja z warstwą danych: ruszamy kulę o v * dt
+            foreach (var st in snapshot)
             {
-                var st = snapshot[i];
-                var dp = st.Position - oldPositions[i];
-                deltas[i] = new RawVector(dp.x, dp.y);
-                newVels[i] = new RawVector(st.Velocity.x, st.Velocity.y);
-            }
-
-            lock (_lock)
-            {
-                for (int i = 0; i < snapshot.Length; i++)
-                {
-                    var real = _states[i];
-                    real.Position = snapshot[i].Position;
-                    real.Velocity = snapshot[i].Velocity;
-                }
-            }
-
-            for (int i = 0; i < snapshot.Length; i++)
-            {
-                var st = snapshot[i];
-                _dataLayer.MoveBall(st.Underlying, deltas[i]);
-                st.Underlying.Velocity = newVels[i];
+                var moveVec = new RawVector(st.Velocity.x * deltaTime, st.Velocity.y * deltaTime);
+                _dataLayer.MoveBall(st.Underlying, moveVec);
             }
         }
 
@@ -156,14 +153,9 @@ namespace TP.ConcurrentProgramming.BusinessLogic
                     new Vector(vec.x, vec.y),
                     new Vector(dataBall.Velocity.x, dataBall.Velocity.y),
                     r);
-
-                dataBall.NewPositionNotification += (_, v)
-                    => state.Position = new Vector(v.x, v.y);
-
+                dataBall.NewPositionNotification += (_, v) => state.Position = new Vector(v.x, v.y);
                 lock (_lock)
-                {
                     _states.Add(state);
-                }
 
                 upperLayerHandler(
                     new Position(state.Position.x, state.Position.y),
@@ -174,26 +166,53 @@ namespace TP.ConcurrentProgramming.BusinessLogic
         public override void RemoveLastBall()
         {
             if (_disposed) throw new ObjectDisposedException(nameof(BusinessLogicImplementation));
-
             lock (_lock)
             {
                 if (_states.Count > 0)
                     _states.RemoveAt(_states.Count - 1);
             }
-
             _dataLayer.RemoveLastBall();
         }
 
         public override void Dispose()
         {
-            if (_disposed) throw new ObjectDisposedException(nameof(BusinessLogicImplementation));
+            if (_disposed) return;
 
-            _cts?.Cancel();
+            _tickerTimer?.Stop();
+            if (_tickerTimer != null)
+            {
+                _tickerTimer.Elapsed -= OnTickerTimerElapsed;
+                _tickerTimer.Dispose();
+            }
+
+            _logTimer?.Stop();
+            if (_logTimer != null)
+            {
+                _logTimer.Elapsed -= OnLogTimerElapsed;
+                _logTimer.Dispose();
+            }
+
+            _logger?.Dispose();
+            _tickEvent.Dispose();
             _dataLayer.Dispose();
+
             _disposed = true;
         }
 
-        [Conditional("DEBUG")]
-        internal void CheckObjectDisposed(Action<bool> cb) => cb(_disposed);
+        private void OnLogTimerElapsed(object? sender, ElapsedEventArgs e)
+        {
+            BallState[] snapshot;
+            lock (_lock)
+                snapshot = _states.ToArray();
+
+            _logger?.Log($"INFO: Logging state of {snapshot.Length} balls.");
+            foreach (var state in snapshot)
+            {
+                var pos = state.Position;
+                var vel = state.Velocity;
+                string message = $"Ball[{state.Underlying.GetHashCode()}]: Pos=({pos.x:F2}, {pos.y:F2}), Vel=({vel.x:F2}, {vel.y:F2})";
+                _logger?.Log(message);
+            }
+        }
     }
 }

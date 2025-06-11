@@ -14,33 +14,42 @@ using TP.ConcurrentProgramming.Presentation.ViewModel;
 
 namespace TP.ConcurrentProgramming.PresentationView
 {
-    /// <summary>
-    /// View implementation
-    /// </summary>
-    public partial class MainWindow : Window
+  /// <summary>
+  /// View implementation
+  /// </summary>
+  public partial class MainWindow : Window
+  {
+    public MainWindow()
     {
-        public MainWindow()
-        {
-            InitializeComponent();
-        }
+      Random random = new Random();
+      InitializeComponent();
+      MainWindowViewModel viewModel = (MainWindowViewModel)DataContext;
+      double screenWidth = SystemParameters.PrimaryScreenWidth;
+      double screenHeight = SystemParameters.PrimaryScreenHeight;
+      //viewModel.Start(random.Next(5, 10));
+    }
+
+    /// <summary>
+    /// Raises the <seealso cref="System.Windows.Window.Closed"/> event.
+    /// </summary>
+    /// <param name="e">An <see cref="EventArgs"/> that contains the event data.</param>
+    protected override void OnClosed(EventArgs e)
+    {
+      if (DataContext is MainWindowViewModel viewModel)
+        viewModel.Dispose();
+      base.OnClosed(e);
+    }
 
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn)
-                btn.IsEnabled = false;
-
             if (DataContext is MainWindowViewModel viewModel)
             {
-                const double width = 395;
-                const double height = 415;
+                double width = 395; 
+                double height = 415; 
                 viewModel.StartSimulationWithSize(width, height);
+                if (sender is Button btn)
+                    btn.IsEnabled = false;
             }
-        }
-        protected override void OnClosed(EventArgs e)
-        {
-            if (DataContext is MainWindowViewModel vm)
-                vm.Dispose();
-            base.OnClosed(e);
         }
     }
 }
